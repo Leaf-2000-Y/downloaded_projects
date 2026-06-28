@@ -27,7 +27,21 @@
         ```
 *   **复刻要点**：避开使用重量级的 Puppeteer/Selenium 浏览器环境，通过 Python 内建 V8 引擎本地秒级签名，将 CPU 消耗和响应时延降到最低。
 
-### 2. Express 代理转发与防盗链流式中转
+### 2. 网页/HTML 静态数据状态正则提取 (Xiaohongshu 爬虫)
+*   **技术挑战**：小红书详情接口具有反爬检测。如果直接抓取其内部 AJAX 接口，很容易被安全策略拦截。
+*   **源码解决方案** (`xiaohongshu_parser.py`)：
+    *   **静态数据抓取**：不直接请求 API，而是使用标准的 requests 发起普通网页请求，直接获取其静态 HTML 页面。
+    *   **正则切片状态**：通过正则表达式匹配页面中服务器注入的初始化 JSON 状态树 `window.__INITIAL_STATE__`：
+        ```python
+        pattern = re.compile(r'window\.__INITIAL_STATE__\s*=\s*(\{.*\})', re.DOTALL)
+        json_str = BaseParser.parse_html_data(html_content, pattern)
+        if json_str:
+            full_data = json.loads(json_str)
+            note_detail = full_data['note']['noteDetailMap'][first_note_id]['note']
+        ```
+    *   **提取逻辑**：规避了所有复杂的 API 请求头校验，通过直接抓取注入的模板数据获取最高质量的无水印图、视频地址 and 作者头像。
+
+### 3. Express 代理转发与防盗链流式中转
 *   **技术挑战**：
     1.  微信小程序对访问的外部 API 有严格的“合法域名白名单”限制，且平台域名（如 `bytedance.com`）无法配置。
     2.  第三方视频源地址通常有防盗链保护（判断 Referer、Origin 或 User-Agent），如果直接将原始视频链接给到小程序 `<video>` 标签，会被平台拒绝访问。
@@ -116,11 +130,11 @@
 
 ---
 
-## 🎨 三、 核心技术拆解三：Codex CLI 驱动型 AI 工作流引擎
+## 🎨 三、 核心技术拆解三：Codex CLI 驱动型 AI 工作流与 Canvas 2D 降级渲染
 
 **对应项目**：`shengcai_demo_8004` (家具平面布置生成效果图 & 室内AI方案工作台)  
 **技术难度**：★★★★☆  
-**核心价值**：实现复杂 Stable Diffusion/ControlNet 图像处理管道的后台代理级调用。
+**核心价值**：实现复杂 Stable Diffusion/ControlNet 图像处理管道的后台代理级调用与画布降级展示。
 
 ### 1. 结构化 Prompts 构建矩阵
 *   **设计精髓**：不依赖用户输入零散的提示词，系统内建结构化语义组装器（`buildImagePrompt`）。
@@ -143,6 +157,18 @@
         child.stdin.end(fullPrompt); // 将结构化提示词通过标准输入喂给 AI 代理
         ```
     *   **健壮性防假死设计**：通过 `setTimeout` 强制加装 10 分钟硬超时（`codexTimeoutMs`），超时后自动发送 `SIGKILL` 强制回收本地算力资源，并清理残余的隔离目录。
+
+### 3. Canvas 2D 局部智能解构与绘制
+*   **设计精髓**：当本地 AI 计算节点不可用或在客户端演示模式（`demoOnly = true`）下，如何以秒级速度绘制出高颜值的家具布置结果。
+*   **实现细节** (`app.js`)：
+    *   使用 HTML5 Canvas 绘制底层矢量墙线，按比例动态计算房间分布：
+        ```javascript
+        const rooms = [
+          { name: "客厅", x: 0.08, y: 0.1, w: 0.42, h: 0.32, c: colors[0] },
+          { name: "餐厨", x: 0.53, y: 0.1, w: 0.35, h: 0.32, c: colors[1] }
+        ];
+        ```
+    *   **高阶家具绘制函数**：内置 `drawSofa`、`drawBed`、`drawDining` 等定制 of Canvas 绘图算法，使用圆角矩形 (`roundedRect`) 和多层半透明度重叠（如 `globalAlpha = 0.72`）实现具有现代呼吸感的扁平手绘平面图。
 
 ---
 
@@ -169,7 +195,62 @@
 
 ---
 
-## 🧠 五、 核心技术拆解五：本地-网页双脑通信桥接系统
+## 🔄 五、 核心技术拆解五：多路需求诊断与自学习 PRD 编译引擎
+
+**对应项目**：`project_8006` (PRD需求工作台)  
+**技术难度**：★★★★☆  
+**核心价值**：构建结构化需求自检会话环，通过联网获取竞品背景并输出评估。
+
+### 1. 结构化需求收集会话状态机
+*   **设计精髓**：定义完备的 `RequirementFields`，按优先级有序提问，计算完成度百分比，动态计算评估结果。
+*   **完成度公式**：
+    $$\text{Completeness} = \frac{\text{QUESTION\_ORDER.length} - \text{missingInfo.length}}{\text{QUESTION\_ORDER.length}} \times 100\%$$
+
+### 2. 启发式需求打分评估算法 (`requirement-engine.ts`)
+*   **量化指标**：
+    - 真实场景 (`realScenario`，最高20分)：缺少目标用户扣8分，缺少痛点场景扣6分。
+    - 痛点频次 (`frequency`，最高20分)：匹配到“每天/高频/反复”给18分，否则给8分。
+    - 付费意愿 (`willingnessToPay`，最高15分)：检测到“月付/付费/买”给14分，否则给6分。
+    - MVP可行性 (`mvpFeasibility`，最高15分)：检测到“2周/最小/只做”给13分，否则给7分。
+    - 差异度 (`differentiation`，最高10分)：有行业吐槽词如“太贵/不好用/复杂/限流”给8分，否则给5分。
+*   **四级分类决策表 (Verdict Matrix)**：
+    - `total >= 80`：**优先做，进入 MVP**
+    - `total >= 60`：**可以验证，但先不要重开发**
+    - `total >= 40`：**风险较高，需要继续访谈**
+    - `total < 40`：**大概率伪需求，建议换方向**
+
+### 3. 联网自学习竞品注入逻辑 (`api/research`)
+*   **实现机制**：当用户录入 `idea`、`targetUser` 或 `contextPain` 时，系统触发异步搜索：
+    - 将提取的需求核心信号构建为查询串：`${idea} ${targetUser} ${pain}`。
+    - 将检索出的网页摘要作为 `competitor` 和 `alternative` 证据回填至 `fields.researchNotes`。
+    - AI 会话模块在此基础上，自动给出针对竞品的垂直化差异分析。
+
+---
+
+## 📈 六、 核心技术拆解六：个人防偏航复盘与反习惯性错误闭环
+
+**对应项目**：`project_8010` (个人复盘助手)  
+**技术难度**：★★★☆☆  
+**核心价值**：利用启发式算法在本地匹配用户潜在的认知偏差，自动提示防错路径。
+
+### 1. 认知偏移自动检测器 (`review-engine.ts`)
+*   **设计精髓**：用户容易陷入琐碎事务而偏离长期核心大方向，系统使用 Heuristic 匹配快速抓取常见认知陷阱：
+    ```typescript
+    const patternMap = [
+      { keys: ["工具", "设计细节", "细节", "选择"], label: "被工具选择或细节打断主线" },
+      { keys: ["发散", "偏航", "带偏"], label: "发散后没有及时拉回核心目标" },
+      { keys: ["逃避", "拖延", "失约"], label: "对关键任务出现逃避或拖延" },
+      { keys: ["忙", "杂事", "临时"], label: "用忙碌掩盖核心目标推进不足" }
+    ];
+    ```
+*   **匹配反馈**：系统读取日记中的 `mistakes` 和 `driftReason` 字段，发现包含匹配的关键字时，强制在界面头部输出高亮的警示标语，并在明日计划生成器中直接强制注入专门的**防错警示动作（Anti-Mistake Warning）**。
+
+### 2. 连续坚持天数 (Streak) 计算逻辑
+*   采用倒序追溯算法，过滤去重用户的所有复盘时间，逐天逆向移动游标检查是否有日期中断，确保 Streak 数据可信度达到 100%。
+
+---
+
+## 🧠 七、 核心技术拆解七：本地-网页双脑通信桥接系统
 
 **对应项目**：`Tryrevive` (爆款视频复刻助手)  
 **技术难度**：★★★★☆  
@@ -203,7 +284,7 @@
 
 ---
 
-## 🚀 六、 复刻避坑与工程建议
+## 🚀 八、 复刻避坑与系统工程建议
 
 为了确保你在此后的项目复刻中能够稳定推进，请遵循以下规范：
 
