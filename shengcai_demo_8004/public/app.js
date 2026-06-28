@@ -16,8 +16,8 @@ const modes = {
   },
   room: {
     title: "房间效果",
-    summary: "按房间类型、风格、材质生成室内效果图。",
-    resultName: "房间效果图"
+    summary: "按房间清单逐间生成独立室内效果图。",
+    resultName: "分房间效果图"
   },
   enhance: {
     title: "质感增强",
@@ -26,12 +26,26 @@ const modes = {
   }
 };
 
+const appVersion = "20260628-demo-assets";
+
 const generatedAssets = {
   layout: "/generated/layout.png",
   colored: "/generated/colored.png",
   axon: "/generated/axon.png",
   room: "/generated/room.png",
   enhance: "/generated/enhance.png"
+};
+
+const roomDemoAssets = {
+  living: "/generated/rooms/living.png",
+  master: "/generated/rooms/master.png",
+  bedroom: "/generated/rooms/bedroom.png",
+  second: "/generated/rooms/bedroom.png",
+  child: "/generated/rooms/bedroom.png",
+  kitchen: "/generated/rooms/living.png",
+  dining: "/generated/rooms/living.png",
+  selected: "/generated/room.png",
+  fallback: "/generated/room.png"
 };
 
 const paletteByStyle = {
@@ -51,6 +65,22 @@ const state = {
   demoOnly: false,
   results: []
 };
+
+const roomDefinitions = [
+  { key: "living", label: "客厅", aliases: ["客厅", "起居室"] },
+  { key: "master", label: "主卧", aliases: ["主卧", "主人房", "主卧室"] },
+  { key: "second", label: "次卧", aliases: ["次卧", "次卧室", "客卧"] },
+  { key: "elder", label: "老人房", aliases: ["老人房", "长辈房", "父母房"] },
+  { key: "bedroom", label: "卧室", aliases: ["卧室", "睡房"] },
+  { key: "child", label: "儿童房", aliases: ["儿童房", "小孩房", "男孩房", "女孩房"] },
+  { key: "study", label: "书房", aliases: ["书房", "办公区", "工作区"] },
+  { key: "dining", label: "餐厅", aliases: ["餐厅", "餐区"] },
+  { key: "kitchen", label: "厨房", aliases: ["厨房", "厨区", "开放式厨房"] },
+  { key: "bathroom", label: "卫生间", aliases: ["卫生间", "浴室", "洗手间", "厕所"] },
+  { key: "balcony", label: "阳台", aliases: ["阳台", "露台"] },
+  { key: "entry", label: "玄关", aliases: ["玄关", "入户", "门厅"] },
+  { key: "cloakroom", label: "衣帽间", aliases: ["衣帽间", "衣帽区"] }
+];
 
 const el = {
   canvas: document.getElementById("resultCanvas"),
@@ -92,9 +122,60 @@ function getConfig() {
   };
 }
 
-function composePrompt() {
+function getRoomEffectTargets() {
+  const brief = el.roomBrief.value.trim();
+  const targets = [];
+  const hasSpecificBedroom = /主卧|次卧|儿童房|小孩房|客卧|老人房|男孩房|女孩房/.test(brief);
+  const appendTarget = (room) => {
+    if (!targets.some((item) => item.key === room.key || item.label === room.label)) {
+      targets.push({ key: room.key, label: room.label });
+    }
+  };
+
+  roomDefinitions.forEach((room) => {
+    if (room.key === "bedroom" && hasSpecificBedroom) return;
+    if (room.aliases.some((alias) => brief.includes(alias))) {
+      appendTarget(room);
+    }
+  });
+
+  const looksLikeWholeHome = /户|家|两居|两室|三居|三室|主卧|次卧|厨房|客厅/.test(brief);
+  if (looksLikeWholeHome) {
+    if (/三口|孩子|儿童|小孩/.test(brief)) {
+      appendTarget({ key: "child", label: "儿童房" });
+    } else if (/主卧|两居|两室|小户型/.test(brief)) {
+      appendTarget({ key: "second", label: "次卧" });
+    }
+    if (/餐桌|餐区|餐厨/.test(brief)) {
+      appendTarget({ key: "dining", label: "餐厅" });
+    }
+    if (targets.length >= 3) {
+      appendTarget({ key: "bathroom", label: "卫生间" });
+    }
+  }
+
+  if (!targets.length) {
+    targets.push({ key: "selected", label: el.roomType.value || "房间" });
+  }
+
+  return targets;
+}
+
+function getRoomEffectConfig(room) {
   const config = getConfig();
-  const target = modes[state.mode].resultName;
+  return {
+    ...config,
+    roomType: room.label,
+    roomBrief: [
+      config.roomBrief,
+      `当前任务：只生成「${room.label}」这一间房的室内效果图。`,
+      "输出应为站在房间内看到的透视效果，不要生成整套户型图、彩平图或轴侧图。"
+    ].join("\n")
+  };
+}
+
+function composePrompt(mode = state.mode, config = getConfig()) {
+  const target = modes[mode].resultName;
   return [
     `目标：${target}`,
     `房间：${config.roomType}`,
@@ -107,6 +188,12 @@ function composePrompt() {
 }
 
 function refreshPrompt() {
+  if (state.mode === "room") {
+    const rooms = getRoomEffectTargets().map((room) => room.label).join("、");
+    el.promptPreview.textContent = `${composePrompt()}；将逐间生成：${rooms}`;
+    return;
+  }
+
   el.promptPreview.textContent = composePrompt();
 }
 
@@ -275,11 +362,10 @@ function generateLayout() {
   drawFooter(config);
 }
 
-function generateRoom() {
+function generateRoom(config = getConfig(), title = `${config.roomType}效果图`) {
   clearCanvas();
-  const config = getConfig();
   const colors = paletteByStyle[config.style] || paletteByStyle["现代简约"];
-  titleBlock(modes[state.mode].resultName, `${config.roomType} / ${config.style}`);
+  titleBlock(title, `${config.roomType} / ${config.style}`);
 
   const room = { x: 86, y: 160, w: 728, h: 630 };
   const gradient = ctx.createLinearGradient(room.x, room.y, room.x, room.y + room.h);
@@ -323,14 +409,17 @@ function drawWindow(x, y, w, h) {
 
 function drawInteriorFurniture(room, colors, type) {
   ctx.fillStyle = colors[3];
-  if (type === "卧室") {
+  if (/卧|儿童|客卧|老人房/.test(type)) {
     roundedRect(room.x + 170, room.y + 360, 330, 138, 18);
     ctx.fill();
     ctx.fillStyle = "#f7f2ec";
     ctx.fillRect(room.x + 196, room.y + 378, 278, 48);
+    ctx.fillStyle = colors[2];
+    roundedRect(room.x + 540, room.y + 338, 72, 168, 10);
+    ctx.fill();
     return;
   }
-  if (type === "餐厅" || type === "厨房") {
+  if (/餐|厨/.test(type)) {
     roundedRect(room.x + 230, room.y + 376, 250, 92, 999);
     ctx.fill();
     ctx.fillStyle = colors[2];
@@ -338,6 +427,17 @@ function drawInteriorFurniture(room, colors, type) {
       ctx.fillRect(room.x + 168 + i * 82, room.y + 342, 44, 38);
       ctx.fillRect(room.x + 168 + i * 82, room.y + 470, 44, 38);
     }
+    return;
+  }
+  if (/书房|办公|工作/.test(type)) {
+    roundedRect(room.x + 190, room.y + 390, 340, 82, 12);
+    ctx.fill();
+    ctx.fillStyle = colors[2];
+    roundedRect(room.x + 560, room.y + 360, 64, 110, 12);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    roundedRect(room.x + 270, room.y + 500, 170, 64, 12);
+    ctx.fill();
     return;
   }
   roundedRect(room.x + 160, room.y + 392, 350, 112, 18);
@@ -350,20 +450,23 @@ function drawInteriorFurniture(room, colors, type) {
   ctx.fill();
 }
 
-function drawGeneratedAsset(mode) {
-  const src = generatedAssets[mode];
+function drawGeneratedAsset(mode, options = {}) {
+  const src = options.src || generatedAssets[mode];
   if (!src) return Promise.resolve(false);
+  const config = options.config || getConfig();
+  const title = options.title || modes[mode].resultName;
+  const subtitle = options.subtitle || `Codex 生图样张 / ${config.style}`;
 
   return new Promise((resolve) => {
     const image = new Image();
     image.onload = () => {
       clearCanvas();
-      titleBlock(modes[mode].resultName, `Codex 生图样张 / ${getConfig().style}`);
+      titleBlock(title, subtitle);
       const bounds = drawImageContain(image, 1);
       ctx.strokeStyle = "rgba(11,118,109,0.45)";
       ctx.lineWidth = 4;
       ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-      drawFooter(getConfig());
+      drawFooter(config);
       resolve(true);
     };
     image.onerror = () => resolve(false);
@@ -371,17 +474,17 @@ function drawGeneratedAsset(mode) {
   });
 }
 
-function drawImageUrl(src, label) {
+function drawImageUrl(src, label, title = modes[state.mode].resultName, config = getConfig()) {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => {
       clearCanvas();
-      titleBlock(modes[state.mode].resultName, label);
+      titleBlock(title, label);
       const bounds = drawImageContain(image, 1);
       ctx.strokeStyle = "rgba(11,118,109,0.45)";
       ctx.lineWidth = 4;
       ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-      drawFooter(getConfig());
+      drawFooter(config);
       resolve();
     };
     image.onerror = () => reject(new Error("图片加载失败"));
@@ -389,16 +492,19 @@ function drawImageUrl(src, label) {
   });
 }
 
-async function drawLiveGeneration() {
+async function drawLiveGeneration(options = {}) {
+  const mode = options.mode || state.mode;
+  const config = options.config || getConfig();
+  const prompt = options.prompt || composePrompt(mode, config);
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: {
       "content-type": "application/json"
     },
     body: JSON.stringify({
-      mode: state.mode,
-      config: getConfig(),
-      prompt: composePrompt(),
+      mode,
+      config,
+      prompt,
       sourceName: state.sourceName,
       sourceImageData: state.sourceImage?.src || null
     })
@@ -409,7 +515,12 @@ async function drawLiveGeneration() {
     throw new Error(data.error || `生成接口返回 ${response.status}`);
   }
 
-  await drawImageUrl(data.imageUrl, `Codex 订阅生图 / ${data.model}`);
+  await drawImageUrl(
+    data.imageUrl,
+    `Codex 订阅生图 / ${data.model}`,
+    options.title || modes[mode].resultName,
+    config
+  );
   state.lastApiResult = data;
   return data;
 }
@@ -460,6 +571,11 @@ function drawFooter(config) {
 }
 
 async function generate() {
+  if (state.mode === "room") {
+    await generateRoomEffects();
+    return;
+  }
+
   el.empty.classList.add("hidden");
   el.generate.disabled = true;
   el.generate.textContent = state.demoOnly ? "载入演示..." : "生成中...";
@@ -504,15 +620,85 @@ async function generate() {
   el.generate.textContent = "生成";
 }
 
-function commitResult() {
-  const config = getConfig();
-  const src = el.canvas.toDataURL("image/png");
+async function generateRoomEffects() {
+  const rooms = getRoomEffectTargets();
+  el.empty.classList.add("hidden");
+  el.generate.disabled = true;
+  el.generate.textContent = state.demoOnly ? "载入房间..." : `生成中 0/${rooms.length}`;
+  setApiStatus(
+    state.demoOnly ? "warn" : "warn",
+    state.demoOnly
+      ? `纯演示模式：正在载入 ${rooms.length} 个房间的静态样张。`
+      : `正在逐间调用本地 Codex CLI 生图，共 ${rooms.length} 间。`
+  );
+
+  let completed = 0;
+  try {
+    for (const room of rooms) {
+      const config = getRoomEffectConfig(room);
+      const title = `${room.label}效果图`;
+      const prompt = composePrompt("room", config);
+      el.generate.textContent = state.demoOnly ? `载入 ${completed + 1}/${rooms.length}` : `生成中 ${completed + 1}/${rooms.length}`;
+
+      let liveDone = false;
+      if (!state.demoOnly) {
+        try {
+          await drawLiveGeneration({ mode: "room", config, prompt, title });
+          commitResult({ type: "room", title, prompt, config });
+          liveDone = true;
+        } catch (error) {
+          setApiStatus(
+            "error",
+            state.sourceImage
+              ? `${title}生成失败：${error.message}。已上传参考图时不会回退演示样张。`
+              : `${title}生成失败：${error.message}。当前显示静态样张兜底。`
+          );
+          if (state.sourceImage) break;
+        }
+      }
+
+      if (!liveDone && (state.demoOnly || !state.sourceImage)) {
+        const drewAsset = await drawGeneratedAsset("room", {
+          src: roomDemoAssets[room.key] || roomDemoAssets.fallback,
+          title,
+          subtitle: `静态演示样张 / ${config.style}`,
+          config
+        });
+        if (drewAsset) {
+          commitResult({ type: "room", title, prompt, config });
+        } else {
+          generateRoom(config, title);
+          commitResult({ type: "room", title, prompt, config });
+        }
+      }
+
+      completed += 1;
+    }
+
+    if (completed > 0) {
+      setApiStatus(
+        state.demoOnly ? "warn" : "ok",
+        state.demoOnly
+          ? `纯演示模式：已载入 ${completed} 个房间的静态样张。`
+          : `Codex 订阅生图已完成：共生成 ${completed} 个房间效果图。`
+      );
+    }
+  } finally {
+    el.generate.disabled = false;
+    el.generate.textContent = "生成";
+  }
+}
+
+function commitResult(options = {}) {
+  const type = options.type || state.mode;
+  const config = options.config || getConfig();
+  const src = options.src || el.canvas.toDataURL("image/png");
   const result = {
-    id: `${Date.now()}`,
-    type: state.mode,
-    title: modes[state.mode].resultName,
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    type,
+    title: options.title || modes[type].resultName,
     src,
-    prompt: composePrompt(),
+    prompt: options.prompt || composePrompt(type, config),
     config,
     createdAt: new Date().toLocaleString("zh-CN", { hour12: false })
   };
@@ -601,6 +787,7 @@ function exportProject() {
 
 function saveProject() {
   const snapshot = {
+    appVersion,
     config: getConfig(),
     sourceName: state.sourceName,
     sourceImage: state.sourceImage?.src || null,
@@ -616,6 +803,10 @@ function restoreProject() {
   if (!raw) return;
   try {
     const snapshot = JSON.parse(raw);
+    if (snapshot.appVersion !== appVersion) {
+      localStorage.removeItem("interior-ai-project");
+      return;
+    }
     if (snapshot.config) {
       el.projectName.value = snapshot.config.projectName || el.projectName.value;
       el.roomBrief.value = snapshot.config.roomBrief || el.roomBrief.value;
