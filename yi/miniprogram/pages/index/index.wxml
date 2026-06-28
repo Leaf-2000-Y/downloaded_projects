@@ -1,0 +1,91 @@
+<!-- 首页 -->
+<view class="container">
+  <!-- Logo 和标题 -->
+  <view class="header">
+    <view class="logo">
+      <text class="logo-icon">🎬</text>
+    </view>
+    <text class="title">视频无水印下载</text>
+    <text class="subtitle">支持抖音、快手、小红书等20+平台</text>
+  </view>
+
+  <!-- 输入区域 -->
+  <view class="input-section card">
+    <view class="input-label">粘贴视频链接</view>
+    <view class="input-wrapper">
+      <textarea
+        class="input-textarea"
+        placeholder="请粘贴抖音/快手/小红书等平台的视频分享链接..."
+        placeholder-class="placeholder"
+        value="{{inputText}}"
+        bindinput="onInputChange"
+        maxlength="500"
+        auto-height
+      />
+      <view class="input-actions">
+        <view class="action-btn paste-btn" bindtap="pasteFromClipboard">
+          <text class="action-icon">📋</text>
+          <text class="action-text">粘贴</text>
+        </view>
+        <view class="action-btn clear-btn" wx:if="{{inputText}}" bindtap="clearInput">
+          <text class="action-icon">✕</text>
+        </view>
+      </view>
+    </view>
+    <button class="btn-primary parse-btn" bindtap="parseVideo" disabled="{{!inputText || loading}}">
+      <text wx:if="{{loading}}" class="loading-spinner"></text>
+      <text wx:else>{{loading ? '解析中...' : '开始解析'}}</text>
+    </button>
+  </view>
+
+  <!-- 支持的平台 -->
+  <view class="platforms-section">
+    <view class="section-title">支持的平台</view>
+    <scroll-view class="platforms-scroll" scroll-x enable-flex>
+      <view class="platform-item" wx:for="{{platforms}}" wx:key="id">
+        <text class="platform-icon">{{item.icon}}</text>
+        <text class="platform-name">{{item.name}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="tips-section card">
+    <view class="tips-title">使用说明</view>
+    <view class="tips-list">
+      <view class="tip-item">
+        <text class="tip-step">1</text>
+        <text class="tip-text">打开抖音/快手等APP，找到想要下载的视频</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-step">2</text>
+        <text class="tip-text">点击分享按钮，选择"复制链接"</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-step">3</text>
+        <text class="tip-text">返回小程序，粘贴链接并点击"开始解析"</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-step">4</text>
+        <text class="tip-text">预览视频后，点击"保存到相册"即可</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="history-section" wx:if="{{history.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">最近解析</text>
+      <text class="clear-history" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-list">
+      <view class="history-item card" wx:for="{{history}}" wx:key="video_id" bindtap="reparseHistory" data-url="{{item.url}}">
+        <image class="history-cover" src="{{item.cover_url}}" mode="aspectFill" />
+        <view class="history-info">
+          <text class="history-title">{{item.title}}</text>
+          <text class="history-platform">{{item.platform}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

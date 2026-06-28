@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # media-parser 解析后端
+  media-parser:
+    build: ./media-parser
+    container_name: media-parser-backend
+    restart: always
+    ports:
+      - "8051:8051"
+    volumes:
+      - ./media-parser/static/videos:/app/static/videos
+      - ./media-parser/logs:/app/logs
+    environment:
+      - TZ=Asia/Shanghai
+
+  # 代理服务器
+  proxy-server:
+    build: ./proxy-server
+    container_name: media-parser-proxy
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - TZ=Asia/Shanghai
+      - MEDIA_PARSER_URL=http://media-parser:8051
+    depends_on:
+      - media-parser

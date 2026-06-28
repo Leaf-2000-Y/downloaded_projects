@@ -1,0 +1,610 @@
+:root {
+  color: #1f2933;
+  background: #f4f7f5;
+  font-family:
+    Arial,
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #cbd5d0;
+  border-radius: 8px;
+  color: #1f2933;
+  background: #ffffff;
+  outline: none;
+}
+
+input {
+  min-height: 44px;
+  padding: 0 13px;
+}
+
+textarea {
+  min-height: 92px;
+  resize: vertical;
+  padding: 12px 13px;
+  line-height: 1.65;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #1d7c73;
+  box-shadow: 0 0 0 3px rgb(29 124 115 / 16%);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin-top: 0;
+}
+
+.app-shell,
+.setup-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.setup-shell {
+  display: grid;
+  place-items: center;
+}
+
+.setup-panel {
+  width: min(100%, 680px);
+  padding: 36px;
+  border: 1px solid #d9e1dd;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgb(36 52 47 / 10%);
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  color: #1d7c73;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.setup-panel h1,
+.topbar h1 {
+  margin-bottom: 14px;
+  color: #17202a;
+  font-size: 2.5rem;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.setup-copy,
+.muted-copy {
+  color: #647067;
+  line-height: 1.7;
+}
+
+.stack-form,
+.review-form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  color: #24342f;
+  font-weight: 800;
+}
+
+.field span {
+  font-size: 0.93rem;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.icon-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.ghost-button:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button {
+  padding: 0 18px;
+  color: #ffffff;
+  background: #1d7c73;
+}
+
+.primary-button:hover {
+  background: #14685f;
+}
+
+.secondary-button,
+.ghost-button,
+.icon-button {
+  border: 1px solid #cfd9d4;
+  color: #24342f;
+  background: #ffffff;
+}
+
+.secondary-button,
+.ghost-button {
+  padding: 0 14px;
+}
+
+.icon-button {
+  width: 44px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1480px;
+  margin: 0 auto 22px;
+}
+
+.topbar h1 {
+  margin-bottom: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.streak-pill,
+.time-chip,
+.status-chip {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.streak-pill {
+  padding: 0 13px;
+  border: 1px solid #e2c873;
+  color: #6d5308;
+  background: #fff7d6;
+}
+
+.time-chip {
+  padding: 0 12px;
+  color: #59655f;
+  background: #eef2ee;
+}
+
+.status-chip {
+  padding: 0 12px;
+}
+
+.status-chip.success {
+  color: #0f6b48;
+  background: #ddf8e9;
+}
+
+.status-chip.warning {
+  color: #8a4b10;
+  background: #fff0dc;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.78fr) minmax(420px, 1.45fr) minmax(260px, 0.85fr);
+  gap: 18px;
+  max-width: 1480px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.side-column,
+.main-column {
+  display: grid;
+  gap: 18px;
+}
+
+.surface {
+  border: 1px solid #d9e1dd;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 45px rgb(36 52 47 / 8%);
+}
+
+.loading-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+}
+
+.loading-state p {
+  margin: 0;
+}
+
+.goal-card,
+.history-card,
+.weekly-card,
+.review-form,
+.review-card {
+  padding: 22px;
+}
+
+.section-heading,
+.form-title-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.form-title-row {
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.section-heading h2,
+.section-heading h3 {
+  margin: 0;
+}
+
+.section-heading h2 {
+  font-size: 1.05rem;
+}
+
+.section-heading h3 {
+  font-size: 0.98rem;
+}
+
+.section-heading.compact {
+  margin-bottom: 10px;
+}
+
+.goal-list {
+  display: grid;
+  gap: 15px;
+  margin: 18px 0 0;
+}
+
+.goal-list div {
+  display: grid;
+  gap: 5px;
+}
+
+.goal-list dt {
+  color: #68746d;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.goal-list dd {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.history-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 18px 0 0;
+  list-style: none;
+}
+
+.history-list li {
+  padding: 12px;
+  border: 1px solid #e3e9e5;
+  border-radius: 8px;
+  background: #f7faf8;
+}
+
+.history-list span {
+  color: #647067;
+  font-size: 0.82rem;
+}
+
+.history-list strong {
+  float: right;
+  color: #1d7c73;
+  font-size: 0.82rem;
+}
+
+.history-list p {
+  clear: both;
+  margin: 7px 0 0;
+  line-height: 1.5;
+}
+
+.goal-reminder,
+.yesterday-box,
+.drift-box,
+.pattern-box,
+.positive-box {
+  border-radius: 8px;
+}
+
+.goal-reminder {
+  display: grid;
+  gap: 5px;
+  padding: 14px 15px;
+  color: #143f3a;
+  background: #e5f6f2;
+}
+
+.goal-reminder span {
+  line-height: 1.55;
+}
+
+.yesterday-box {
+  padding: 15px;
+  border: 1px solid #dce6e1;
+  background: #f7faf8;
+}
+
+.check-list {
+  display: grid;
+  gap: 12px;
+}
+
+.action-check {
+  display: grid;
+  gap: 8px;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #24342f;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin-top: 3px;
+  accent-color: #1d7c73;
+}
+
+.focus-check {
+  padding: 14px 15px;
+  border: 1px solid #d8e4df;
+  border-radius: 8px;
+  background: #f7fbf8;
+}
+
+.focus-check small {
+  display: block;
+  margin-top: 3px;
+  color: #68746d;
+}
+
+.review-card {
+  display: grid;
+  gap: 18px;
+}
+
+.summary-line {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #33423c;
+  background: #f0f3ef;
+  line-height: 1.6;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.mini-section {
+  padding: 15px;
+  border: 1px solid #e3e9e5;
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.mini-section h3,
+.drift-box h3,
+.actions-box h3,
+.weekly-output h3,
+.weekly-output h4 {
+  margin-bottom: 9px;
+  font-size: 0.98rem;
+}
+
+.mini-section ul,
+.actions-box ol,
+.weekly-output ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.drift-box {
+  display: flex;
+  gap: 11px;
+  padding: 15px;
+  color: #653d12;
+  background: #fff4e5;
+}
+
+.drift-box p,
+.pattern-box p,
+.positive-box p,
+.actions-box p,
+.weekly-output p {
+  margin-bottom: 0;
+  line-height: 1.65;
+}
+
+.actions-box {
+  padding: 16px;
+  border: 1px solid #dce6e1;
+  border-radius: 8px;
+  background: #f7fbf8;
+}
+
+.actions-box li {
+  padding-left: 4px;
+}
+
+.action-title-row {
+  margin-bottom: 4px;
+}
+
+.pattern-box,
+.positive-box {
+  padding: 15px;
+}
+
+.pattern-box {
+  border: 1px solid #f0dcc3;
+  background: #fff8ef;
+}
+
+.positive-box {
+  border: 1px solid #cfe4d9;
+  background: #eef8f2;
+}
+
+.weekly-card {
+  display: grid;
+  gap: 16px;
+}
+
+.weekly-output {
+  display: grid;
+  gap: 12px;
+}
+
+.weekly-output h3 {
+  margin-bottom: 0;
+}
+
+.weekly-output h4 {
+  margin: 4px 0 0;
+}
+
+.insight {
+  padding: 12px;
+  border-radius: 8px;
+  color: #143f3a;
+  background: #e5f6f2;
+}
+
+@media (max-width: 1120px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .side-column {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell,
+  .setup-shell {
+    padding: 16px;
+  }
+
+  .setup-panel,
+  .goal-card,
+  .history-card,
+  .weekly-card,
+  .review-form,
+  .review-card {
+    padding: 18px;
+  }
+
+  .topbar,
+  .form-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .setup-panel h1,
+  .topbar h1 {
+    font-size: 2rem;
+    line-height: 1.12;
+  }
+
+  .topbar-actions,
+  .side-column,
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-actions {
+    display: grid;
+  }
+
+  .ghost-button,
+  .primary-button,
+  .secondary-button,
+  .streak-pill {
+    width: 100%;
+  }
+
+  .icon-button {
+    width: 100%;
+  }
+}

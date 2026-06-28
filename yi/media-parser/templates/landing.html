@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>媒体解析服务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 32px;
+            padding: 24px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+        }
+
+        .result-item label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .result-item a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: 16px;
+            text-align: center;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .platforms {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .platforms h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .platform-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .platform-tag {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎬</div>
+            <h1>媒体解析服务</h1>
+            <p class="subtitle">支持 20+ 平台的视频/图片无水印解析</p>
+        </div>
+
+        <div class="form-group">
+            <label for="url">粘贴视频链接</label>
+            <textarea id="url" placeholder="请粘贴抖音、快手、小红书等平台的视频分享链接..."></textarea>
+        </div>
+
+        <button id="parseBtn" onclick="parseVideo()">开始解析</button>
+
+        <div id="error" class="error"></div>
+
+        <div id="result" class="result">
+            <h3>解析结果</h3>
+            <div class="result-item">
+                <label>标题</label>
+                <div id="title"></div>
+            </div>
+            <div class="result-item">
+                <label>平台</label>
+                <div id="platform"></div>
+            </div>
+            <div class="result-item">
+                <label>作者</label>
+                <div id="author"></div>
+            </div>
+            <div class="result-item">
+                <label>视频地址（无水印）</label>
+                <a id="videoUrl" href="#" target="_blank"></a>
+            </div>
+            <div class="result-item">
+                <label>封面地址</label>
+                <a id="coverUrl" href="#" target="_blank"></a>
+            </div>
+        </div>
+
+        <div class="platforms">
+            <h3>支持的平台</h3>
+            <div class="platform-tags">
+                <span class="platform-tag">🎵 抖音</span>
+                <span class="platform-tag">🎵 TikTok</span>
+                <span class="platform-tag">📹 快手</span>
+                <span class="platform-tag">📕 小红书</span>
+                <span class="platform-tag">📺 B站</span>
+                <span class="platform-tag">💬 微博</span>
+                <span class="platform-tag">🍉 西瓜视频</span>
+                <span class="platform-tag">🦐 皮皮虾</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function parseVideo() {
+            const url = document.getElementById('url').value.trim();
+            const btn = document.getElementById('parseBtn');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+
+            if (!url) {
+                showError('请输入视频链接');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '解析中...';
+            error.classList.remove('show');
+            result.classList.remove('show');
+
+            try {
+                const response = await fetch('/api/parse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: url })
+                });
+
+                const data = await response.json();
+
+                if (data.succ && data.data) {
+                    document.getElementById('title').textContent = data.data.title || '无标题';
+                    document.getElementById('platform').textContent = data.data.platform || '未知';
+                    document.getElementById('author').textContent = data.data.author || '未知';
+                    
+                    const videoUrl = document.getElementById('videoUrl');
+                    videoUrl.href = data.data.video_url;
+                    videoUrl.textContent = data.data.video_url;
+                    
+                    const coverUrl = document.getElementById('coverUrl');
+                    coverUrl.href = data.data.cover_url;
+                    coverUrl.textContent = data.data.cover_url;
+
+                    result.classList.add('show');
+                } else {
+                    showError(data.retdesc || '解析失败');
+                }
+            } catch (e) {
+                showError('网络请求失败，请检查网络');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始解析';
+            }
+        }
+
+        function showError(msg) {
+            const error = document.getElementById('error');
+            error.textContent = msg;
+            error.classList.add('show');
+        }
+
+        // 回车键提交
+        document.getElementById('url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                parseVideo();
+            }
+        });
+    </script>
+</body>
+</html>

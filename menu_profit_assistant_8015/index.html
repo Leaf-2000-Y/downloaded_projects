@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>菜单利润助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">菜</div>
+          <div>
+            <h1>菜单利润助手</h1>
+            <p>快餐新店开业菜单生成</p>
+          </div>
+        </div>
+
+        <nav class="steps" aria-label="生成流程">
+          <button class="step is-active" data-view="upload" type="button">
+            <span>1</span>
+            上传成本表
+          </button>
+          <button class="step" data-view="fields" type="button">
+            <span>2</span>
+            确认识别
+          </button>
+          <button class="step" data-view="result" type="button">
+            <span>3</span>
+            生成菜单
+          </button>
+        </nav>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>经营目标</h2>
+          </div>
+          <label class="field">
+            <span>店铺名称</span>
+            <input id="storeName" value="君超快餐" />
+          </label>
+          <label class="field">
+            <span>目标毛利率</span>
+            <div class="input-suffix">
+              <input id="targetMargin" type="number" min="30" max="85" step="1" value="60" />
+              <em>%</em>
+            </div>
+          </label>
+          <div class="metric-grid">
+            <div>
+              <strong id="menuMargin">64.8%</strong>
+              <span>预计菜单毛利</span>
+            </div>
+            <div>
+              <strong id="comboCount">6</strong>
+              <span>套餐数量</span>
+            </div>
+            <div>
+              <strong id="dishCount">18</strong>
+              <span>菜单菜品</span>
+            </div>
+            <div>
+              <strong id="imageCount">4</strong>
+              <span>AI 图片</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>自动生成策略</h2>
+          </div>
+          <ul class="auto-rules">
+            <li>默认 A4 横版菜单</li>
+            <li>自动生成套餐与双拼</li>
+            <li>自动挑选招牌推荐</li>
+            <li>重点菜品自动生成 AI 图</li>
+          </ul>
+          <button class="primary-action" id="generatePlan" type="button">生成菜单方案</button>
+          <button class="ghost-action" id="exportMenu" type="button">导出菜单 SVG</button>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow" id="viewEyebrow">第 1 步</p>
+            <h2 id="viewTitle">上传菜品成本表</h2>
+          </div>
+          <div class="status-pill" id="marginStatus">已达到目标毛利</div>
+        </header>
+
+        <section class="upload-view app-view is-active" id="uploadView">
+          <div class="upload-card">
+            <div>
+              <h3>上传 Excel，系统自动生成横版菜单</h3>
+              <p>原型支持上传任意文件触发识别流程；正式版会解析 Excel 中的菜品名称与成本价格。</p>
+            </div>
+            <label class="upload-box">
+              <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" />
+              <strong>选择成本表</strong>
+              <span>只需包含菜品名称和成本价格，不强制格式。</span>
+            </label>
+            <button class="primary-action wide" id="useSample" type="button">使用示例数据体验</button>
+          </div>
+        </section>
+
+        <section class="fields-view app-view" id="fieldsView">
+          <div class="field-layout">
+            <div class="table-panel">
+              <div class="section-title">
+                <div>
+                  <h3>识别预览</h3>
+                  <p>系统已从成本表中识别出示例菜品。</p>
+                </div>
+              </div>
+              <div class="data-table-wrap slim">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>原始菜品</th>
+                      <th>成本</th>
+                      <th>识别类型</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fieldPreviewBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel confirm-panel">
+              <h3>确认字段</h3>
+              <label class="field">
+                <span>菜品名称列</span>
+                <select>
+                  <option>菜品名称</option>
+                  <option>产品名称</option>
+                  <option>名称</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>成本价格列</span>
+                <select>
+                  <option>成本价格</option>
+                  <option>成本价</option>
+                  <option>原料成本</option>
+                </select>
+              </label>
+              <p class="helper-copy">已识别 18 个菜品，未检测到销量字段；系统将按菜单结构估算整体毛利。</p>
+              <button class="primary-action" id="confirmFields" type="button">确认并生成</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="content-grid app-view" id="resultView">
+          <section class="table-panel">
+            <div class="section-title">
+              <div>
+                <h3>定价与套餐</h3>
+                <p>售价可手动修改，菜单毛利会实时重算。</p>
+              </div>
+              <button class="ghost-action compact" id="resetPrices" type="button">恢复推荐价</button>
+            </div>
+
+            <div class="tabs" role="tablist">
+              <button class="tab is-active" data-tab="items" type="button">单品</button>
+              <button class="tab" data-tab="combos" type="button">套餐</button>
+              <button class="tab" data-tab="images" type="button">图片任务</button>
+            </div>
+
+            <div class="tab-body is-active" id="itemsTab">
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>菜品</th>
+                      <th>分类</th>
+                      <th>成本</th>
+                      <th>售价</th>
+                      <th>毛利</th>
+                      <th>角色</th>
+                    </tr>
+                  </thead>
+                  <tbody id="itemsBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="tab-body" id="combosTab">
+              <div class="combo-list" id="comboList"></div>
+            </div>
+
+            <div class="tab-body" id="imagesTab">
+              <div class="image-task-list" id="imageTaskList"></div>
+            </div>
+          </section>
+
+          <section class="preview-panel">
+            <div class="section-title">
+              <div>
+                <h3>A4 横版菜单预览</h3>
+                <p>顾客菜单不显示成本与毛利。</p>
+              </div>
+              <div class="segmented" aria-label="菜单模式">
+                <button class="is-active" data-mode="visual" type="button">图文版</button>
+                <button data-mode="dense" type="button">高密度</button>
+              </div>
+            </div>
+            <div class="paper-stage">
+              <article class="a4-paper landscape clean" id="menuPaper"></article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

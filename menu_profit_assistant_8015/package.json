@@ -1,0 +1,9 @@
+{
+  "name": "menu-profit-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A horizontal A4 fast-food menu profit assistant prototype.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

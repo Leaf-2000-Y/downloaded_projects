@@ -1,0 +1,48 @@
+HTTP/2 302 
+server: Tengine
+content-type: text/plain; charset=utf-8
+content-length: 951
+location: https://v9-v2-mps-cdn.douyinvod.com/fed8b38dbc9c48947cfd699f4c3c72f4/6a40e8ed/video/cn/mps/realtime/v1/r/p/v0d00fg10000d46sckvog65l1hvrkdn0/77cffb43b7264adea8669fc58efcab1a/a15f350a5707361b29f717a9b60ed1c8/mp4/main.mp4?a=1128&br=336&bt=336&btag=c0010e000a8000&cd=0%7C0%7C1%7C0&ch=0&codec=h264&cquery=100y&cr=0&cs=0&cv=1&definition=720p&dr=0&ds=3&dy_q=1782635063&dy_va_biz_cert=&eid=69120&feature_id=a0bda0ab39a0229d088573ba250e1030&format=mp4&ft=wU10QT9WiiuGgurMydOC~49Zyo3nOz7xtEkXpMyDtzcwHtQ2B22nT0TcOCO4zud.o~&item_id=7569925331151310120&l=20260628162423218493FB7FEC7CDCA106&logo_type=aweme_search_suffix&lr=aweme_search_suffix&mime_type=video_mp4&qs=0&rc=ZGVmaDhpOTtoZDk6NmVpOkBpM2d1a285cm52NzMzNGkzM0AuXmM1YDYzXmExL18xY2A0YSNraHMuMmRzYDNhLS1kLWFzcw%3D%3D&sign_params=codec%2Cdefinition%2Cformat%2Citem_id%2Clogo_type
+date: Sun, 28 Jun 2026 08:24:23 GMT
+x-tt-logid: 20260628162423218493FB7FEC7CDCA106
+tt_stable: 1
+x-video-codec-type: h264
+status_code: 0
+bd-tt-error-code: 0
+server-timing: inner; dur=82
+x-tt-trace-host: 01c45a4b36b844c7973905e383797d858e7570bb47e0fa63d3c050a18e4928fe8f18ebaca6e744f674239d4a9d057fe4389e7ae196ace09ea25238482d3cc03fdaa5ca17d890cf634c7625499677debfc219b7ea09aa9a2c1442c6caad594b3184ca89418b4af1491a04df4cd281c100e5a55802ca1d99e50733e7028feac7aa35
+x-tt-trace-tag: id=03;cdn-cache=miss;type=dyn
+x-tt-trace-id: 00-260628162423218493FB7FEC7CDCA106-0FA33A2748FC4829-00
+server-timing: cdn-cache;desc=MISS,edge;dur=0,origin;dur=123
+via: dynamic8.cn2005[123,0]
+timing-allow-origin: *
+eagleid: 0ed737c417826350633876835e
+
+HTTP/1.1 403 Forbidden
+Date: Sun, 28 Jun 2026 08:24:23 GMT
+Content-Type: application/json; charset=utf-8
+Content-Length: 116
+Connection: keep-alive
+X-Bdcdn-Cache-Status: TCP_MISS
+X-Kfc-Cachekey: http://mps.originalvod.com/mps/realtime/v1/r/p/v0d00fg10000d46sckvog65l1hvrkdn0/77cffb43b7264adea8669fc58efcab1a/a15f350a5707361b29f717a9b60ed1c8/mp4/main.mp4
+X-Tt-Logid: 2026062816242371D2540E7AFD4B685F3E
+x-request-ip: fdbd:dc01:26:304::227
+x-tt-trace-tag: id=09;cdn-cache=miss;type=static
+x-response-cinfo: 240e:3bc:69d:e80:21c8:a405:ca99:4d26
+x-response-cache: miss
+x-tt-trace-id: 00-26062816242371D2540E7AFD4B685F3E-326B31C04F433E77-00
+Server: TLB
+server-timing: inner; dur=9
+x-tt-trace-host: 01c45a4b36b844c7973905e383797d858e7570bb47e0fa63d3c050a18e4928fe8f708590debb0a38658b248da82bd641568763618cd10df430979ced5bdfed6ddf75cdcb88653d142121af8a381e44b384360b29453330ed68ad89ae11a4f9d25aaed43d759fb1d9c92485143257bf9035924cfada57ba3648ba99a14f2ac17b66
+X-Ser: i26335_c26341, i53988_c29594
+X-Cache: MISS from i53988_c29594(cloudsvr)
+Timing-Allow-Origin: *
+Access-Control-Expose-Headers: Content-Length,Content-Range,content-type,expires,last-modified,via,x-cache
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: range
+Access-Control-Allow-Methods: GET,HEAD,POST,OPTIONS
+Access-Control-Allow-Origin: *
+Access-Control-Max-Age: 3600
+x-tt-supplier-id: 0_4
+server-timing: cdn-cache;desc=MISS,origin;dur=33,edge;dur=65
+

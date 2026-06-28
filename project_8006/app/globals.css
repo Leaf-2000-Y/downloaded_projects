@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f4ee;
+  --foreground: #1f1d1a;
+  --panel: #fffdf8;
+  --muted: #746d63;
+  --line: #ded8cc;
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --amber: #b45309;
+  --rose: #be123c;
+  --blue: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: #99f6e4;
+  color: #134e4a;
+}
+
+.prose-lite h1,
+.prose-lite h2,
+.prose-lite h3 {
+  margin: 0.85rem 0 0.35rem;
+  font-weight: 700;
+  color: #1f1d1a;
+}
+
+.prose-lite h1 {
+  font-size: 1.35rem;
+}
+
+.prose-lite h2 {
+  font-size: 1.08rem;
+}
+
+.prose-lite h3 {
+  font-size: 0.98rem;
+}
+
+.prose-lite p,
+.prose-lite li {
+  color: #4f4942;
+  line-height: 1.72;
+}
+
+.prose-lite ul,
+.prose-lite ol {
+  margin: 0.35rem 0 0.7rem 1.1rem;
+}
+
+.prose-lite code {
+  border-radius: 0.35rem;
+  background: #f2eee5;
+  padding: 0.1rem 0.32rem;
+  color: #7c2d12;
+}
+
+.prose-lite pre {
+  overflow: auto;
+  border-radius: 0.5rem;
+  background: #292524;
+  padding: 1rem;
+  color: #fafaf9;
+}

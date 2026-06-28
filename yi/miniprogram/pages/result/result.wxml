@@ -1,0 +1,72 @@
+<!-- 结果页 -->
+<view class="container">
+  <!-- 返回按钮 -->
+  <view class="back-btn" bindtap="goBack">
+    <text class="back-icon">←</text>
+    <text class="back-text">返回</text>
+  </view>
+
+  <!-- 视频预览 -->
+  <view class="video-preview card">
+    <video
+      class="video-player"
+      src="{{videoData.video_url}}"
+      poster="{{videoData.cover_url}}"
+      controls
+      autoplay
+      show-fullscreen-btn
+      show-play-btn
+      enable-progress-gesture
+    />
+  </view>
+
+  <!-- 视频信息 -->
+  <view class="video-info card">
+    <text class="video-title">{{videoData.title}}</text>
+    <view class="info-row">
+      <text class="info-label">平台</text>
+      <text class="info-value">{{videoData.platform}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">作者</text>
+      <text class="info-value">{{videoData.author}}</text>
+    </view>
+  </view>
+
+  <!-- 下载进度 -->
+  <view class="download-progress" wx:if="{{downloading}}">
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{downloadProgress}}%"></view>
+    </view>
+    <text class="progress-text">{{downloadProgress}}%</text>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-section">
+    <button class="btn-primary download-btn" bindtap="downloadVideo" disabled="{{downloading}}">
+      <text wx:if="{{downloading}}">下载中 {{downloadProgress}}%</text>
+      <text wx:else>💾 保存视频到相册</text>
+    </button>
+  </view>
+
+  <!-- 图集展示 -->
+  <view class="image-gallery" wx:if="{{videoData.image_list && videoData.image_list.length > 0}}">
+    <view class="section-title">图集内容 ({{videoData.image_list.length}}张)</view>
+    <scroll-view class="gallery-scroll" scroll-x enable-flex>
+      <view class="gallery-item" wx:for="{{videoData.image_list}}" wx:key="index" bindtap="previewImage" data-index="{{index}}">
+        <image class="gallery-image" src="{{item.url || item}}" mode="aspectFill" />
+      </view>
+    </scroll-view>
+    <button class="btn-secondary download-all-btn" bindtap="downloadAllImages" disabled="{{downloadingImages}}">
+      {{downloadingImages ? '保存中...' : '📸 保存全部图片'}}
+    </button>
+  </view>
+
+  <!-- 分享按钮 -->
+  <view class="share-section">
+    <button class="share-btn" open-type="share">
+      <text class="share-icon">📤</text>
+      <text class="share-text">分享给朋友</text>
+    </button>
+  </view>
+</view>

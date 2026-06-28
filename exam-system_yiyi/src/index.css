@@ -1,0 +1,655 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+
+
+/* ============================================================
+   DESIGN TOKENS — 日系文艺極簡 (Japanese Minimal)
+   Pure white + warm gray + hairline separators
+   Typography: Noto Serif SC (headings) / Inter (UI)
+   ============================================================ */
+
+
+:root {
+  /* Typography — Mixed serif/sans-serif */
+  --font-heading: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-body: "Noto Serif SC", "Songti SC", "FangSong", serif;
+  --font-ui: "Inter", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-mono: "Fira Code", "Menlo", "Monaco", monospace;
+
+  /* Paper Dimensions */
+  --paper-width: 210mm;
+  --paper-min-height: 297mm;
+  --paper-margin-top: 20mm;
+  --paper-margin-right: 15mm;
+  --paper-margin-bottom: 25mm;
+  --paper-margin-left: 25mm;
+
+  /* Sealing Line */
+  --seal-width: 12mm;
+  --seal-left: 8mm;
+
+  /* Print Font Sizes */
+  --print-font-title: 16pt;
+  --print-font-subtitle: 14pt;
+  --print-font-body: 11pt;
+  --print-font-small: 9pt;
+  --print-line-height: 1.65;
+
+  /* Screen Colors — Pure White Minimal */
+  --color-paper: #ffffff;
+  --color-ink: #111111;
+  --color-ink-secondary: #666666;
+  --color-ink-tertiary: #999999;
+  --color-border: #e5e5e5;
+  --color-border-light: #f0f0f0;
+  --color-accent: #111111;
+  --color-accent-hover: #333333;
+  --color-success: #2d6a4f;
+  
+  /* Canvas / Editor Colors — Warm gray */
+  --editor-bg: #f2f0ed;
+  --sidebar-bg: #ffffff;
+  --toolbar-bg: #ffffff;
+  --hover-bg: #f7f7f7;
+
+  /* Animation — Restrained, 300ms ease */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 300ms var(--ease-premium);
+
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: var(--color-ink);
+  background-color: var(--editor-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-content: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--editor-bg);
+}
+
+/* ============================================================
+   A4 PAGE SIMULATION — Floating Paper on Warm Gray
+   ============================================================ */
+.a4-page {
+  background: var(--color-paper);
+  width: var(--paper-width);
+  min-height: var(--paper-min-height);
+  height: auto;
+  padding: var(--paper-margin-top) var(--paper-margin-right) var(--paper-margin-bottom) var(--paper-margin-left);
+  margin: 24px auto;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  position: relative;
+  color: var(--color-ink);
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  transition: box-shadow var(--transition-base);
+}
+
+.a4-page:hover {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+   LAYOUT ADAPTATION TEMPLATES
+   ============================================================ */
+/* 1. Minimal homework/report style (Grok Report style) */
+.a4-page.layout-minimal {
+  font-family: var(--font-ui) !important;
+  padding: 40px 50px !important;
+}
+.a4-page.layout-minimal .exam-header {
+  padding-left: 0 !important;
+}
+.a4-page.layout-minimal .question-block {
+  font-family: var(--font-ui) !important;
+}
+.a4-page.layout-minimal .options-grid {
+  font-family: var(--font-ui) !important;
+}
+
+/* 2. Art School/Serif Fine Print Style */
+.a4-page.layout-art {
+  font-family: var(--font-heading) !important;
+  padding: 60px 65px !important;
+  line-height: 1.8 !important;
+}
+.a4-page.layout-art .exam-header {
+  padding-left: 0 !important;
+}
+.a4-page.layout-art .question-block {
+  font-family: var(--font-heading) !important;
+}
+.a4-page.layout-art .options-grid {
+  font-family: var(--font-heading) !important;
+}
+
+
+/* Simulation Crop Marks — Subtle warm gray */
+.a4-page.simulation-mode::before,
+.a4-page.simulation-mode::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--color-border);
+  pointer-events: none;
+}
+
+.a4-page.simulation-mode::before {
+  top: -6px;
+  left: -6px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.a4-page.simulation-mode::after {
+  bottom: -6px;
+  right: -6px;
+  border-left: none;
+  border-top: none;
+}
+
+
+/* ============================================================
+   SEALING LINE (密封线) — Authentic Vertical Layout
+   ============================================================ */
+.sealing-line-container {
+  position: absolute;
+  left: var(--seal-left);
+  top: var(--paper-margin-top);
+  bottom: var(--paper-margin-bottom);
+  width: var(--seal-width);
+  border-right: 1px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  color: var(--color-ink-secondary);
+  font-size: 12px;
+  letter-spacing: 0.8em;
+  user-select: none;
+}
+
+.sealing-line-container .seal-text {
+  letter-spacing: 1.2em;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sealing-line-container .seal-dash {
+  width: 1px;
+  height: 18px;
+  border-right: 1px dashed var(--color-border);
+  margin: 4px 0;
+}
+
+.sealing-line-container .seal-notice {
+  font-size: 9px;
+  letter-spacing: 0.5em;
+  color: var(--color-ink-tertiary);
+  margin-top: 8px;
+}
+
+/* ============================================================
+   QUESTION BLOCK — Hover Controls & Layout
+   ============================================================ */
+.question-block {
+  position: relative;
+  padding: 6px 8px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.question-block:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--color-border-light);
+}
+
+.question-block .hover-controls {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: none;
+  gap: 6px;
+  align-items: center;
+  z-index: 10;
+}
+
+.question-block:hover .hover-controls {
+  display: flex;
+}
+
+/* ============================================================
+   OPTIONS — Adaptive Column Layout
+   ============================================================ */
+.options-grid {
+  display: grid;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+
+.options-grid.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.options-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.options-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+/* ============================================================
+   ANSWER SHEET — Independent Section
+   ============================================================ */
+.answer-section {
+  border-top: 1px solid var(--color-ink);
+  padding-top: 16px;
+  margin-top: 24px;
+}
+
+.answer-block {
+  background-color: #fafaf8;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-ink-secondary);
+}
+
+.step-score {
+  display: inline-block;
+  background-color: #f0f0ee;
+  color: var(--color-ink-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+/* ============================================================
+   PRINT CSS — Professional Paper Output
+   ============================================================ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 20mm 15mm 20mm 25mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    background: none !important;
+    color: #000 !important;
+    font-family: var(--font-body) !important;
+    font-size: var(--print-font-body);
+    line-height: var(--print-line-height);
+    margin: 0;
+    padding: 0;
+  }
+
+  .no-print,
+  aside,
+  nav,
+  .hover-controls,
+  button[class*="hover"],
+  .view-mode-toggle {
+    display: none !important;
+  }
+
+  .a4-page {
+    width: auto;
+    min-height: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
+    page-break-after: always;
+  }
+
+  .question-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: none !important;
+    background: none !important;
+    padding: 4px 0;
+  }
+
+  h3, .section-header {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  .sealing-line-container {
+    position: fixed;
+    left: 5mm;
+    top: 20mm;
+    bottom: 20mm;
+    border-right-color: #666;
+    color: #666;
+  }
+
+  .answer-block {
+    background-color: #f5f5f5 !important;
+    border: 1px solid #ccc !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .question-block:hover {
+    background: none !important;
+    border-color: transparent !important;
+  }
+
+  .katex {
+    font-size: 1em !important;
+  }
+
+  .exam-header h1 {
+    font-size: var(--print-font-title);
+  }
+
+  .exam-header h2 {
+    font-size: var(--print-font-subtitle);
+  }
+}
+
+/* ============================================================
+   DRAG AND DROP (dnd-kit) Styles
+   ============================================================ */
+.sortable-item {
+  cursor: grab;
+  touch-action: none;
+}
+
+.sortable-item:active {
+  cursor: grabbing;
+}
+
+.sortable-item.is-dragging {
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--color-ink-tertiary);
+  padding: 4px;
+  border-radius: 2px;
+  transition: color 0.15s var(--ease-premium);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.drag-handle:hover {
+  color: var(--color-ink);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-overlay {
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+  border-radius: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  opacity: 0.95;
+  transform: scale(1.01);
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.inline-wrap {
+  display: inline;
+  word-break: break-word;
+}
+
+/* KaTeX inline alignment fix */
+.katex-display {
+  margin: 0.5em 0;
+}
+
+.katex {
+  font-size: 1.05em;
+}
+
+/* Canvas background — warm gray, clean */
+.editor-canvas-bg {
+  background-color: var(--editor-bg);
+}
+
+/* Japanese Minimal — Sidebar hairline separator */
+.jp-divider {
+  border: none;
+  border-top: 1px solid var(--color-border-light);
+  margin: 0;
+}
+
+/* Japanese Minimal — Section heading */
+.jp-section-title {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-tertiary);
+  text-transform: uppercase;
+}
+
+/* Japanese Minimal — Input field */
+.jp-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  padding: 6px 0;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color var(--transition-base);
+}
+
+.jp-input:focus {
+  border-bottom-color: var(--color-ink);
+}
+
+.jp-input::placeholder {
+  color: var(--color-ink-tertiary);
+}
+
+/* Japanese Minimal — Select field */
+.jp-select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  padding: 6px 0;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-ink);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  padding-right: 16px;
+  transition: border-color var(--transition-base);
+}
+
+.jp-select:focus {
+  border-bottom-color: var(--color-ink);
+}
+
+/* Japanese Minimal — Button (primary) */
+.jp-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 8px 20px;
+  background: var(--color-ink);
+  color: #ffffff;
+  border: 1px solid var(--color-ink);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.jp-btn:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
+
+.jp-btn:active {
+  transform: translateY(0);
+}
+
+/* Japanese Minimal — Button (ghost/secondary) */
+.jp-btn-ghost {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--color-ink-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.jp-btn-ghost:hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink);
+  transform: translateY(-1px);
+}
+
+/* Japanese Minimal — Checkbox */
+.jp-checkbox {
+  accent-color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* Japanese Minimal — Scrollable container */
+.jp-scroll-container {
+  border: 1px solid var(--color-border-light);
+  border-radius: 0;
+  padding: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.jp-scroll-container::-webkit-scrollbar {
+  width: 3px;
+}
+
+.jp-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jp-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 1px;
+}
+
+/* Japanese Minimal — Range/Slider */
+.jp-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.jp-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition-base);
+}
+
+.jp-range::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* Japanese Minimal — Toolbar button */
+.jp-toolbar-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--color-ink-secondary);
+  border: 1px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.jp-toolbar-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--color-ink);
+  transition: all var(--transition-base);
+  transform: translateX(-50%);
+}
+
+.jp-toolbar-btn:hover::after {
+  width: 100%;
+}
+
+.jp-toolbar-btn.active {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.jp-toolbar-btn.active::after {
+  width: 100%;
+}

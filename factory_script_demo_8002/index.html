@@ -1,0 +1,1824 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>工厂短视频脚本生成器 Demo</title>
+  <style>
+    :root {
+      --bg: #edf1f7;
+      --panel: #ffffff;
+      --soft: #f7f7f5;
+      --ink: #1b1b1b;
+      --muted: #7b7d83;
+      --line: #eef0f2;
+      --green: #1b1b1b;
+      --green-2: #f3f4f2;
+      --gold: #b07a26;
+      --red: #b7483e;
+      --blue: #2f6f9f;
+      --shadow: 0 22px 55px rgba(42, 49, 62, .14);
+      --card-shadow: 0 14px 34px rgba(24, 28, 36, .08);
+      --inner-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(circle at 50% 20%, #f9fbff 0, var(--bg) 54%, #e4e9f2 100%);
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    .stage {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+    }
+
+    .phone {
+      width: min(430px, 100%);
+      height: min(900px, calc(100vh - 56px));
+      min-height: 720px;
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, .72);
+      border-radius: 36px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status {
+      height: 38px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      padding: 0 24px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
+
+    .app {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      padding: 12px 24px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      min-width: 0;
+      position: relative;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .library-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font-weight: 750;
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      cursor: pointer;
+      max-width: 100%;
+    }
+
+    .library-switch span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .library-switch svg {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      transition: transform .18s ease;
+    }
+
+    .library-switch.open svg {
+      transform: rotate(180deg);
+    }
+
+    .library-menu {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 34px;
+      width: 210px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      box-shadow: var(--card-shadow);
+      z-index: 30;
+    }
+
+    .library-menu.show {
+      display: grid;
+      gap: 6px;
+    }
+
+    .library-option {
+      width: 100%;
+      min-height: 40px;
+      border: 0;
+      border-radius: 18px;
+      background: transparent;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 9px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .library-option.active {
+      background: var(--green-2);
+      color: var(--green);
+      font-weight: 750;
+    }
+
+    .library-option[aria-disabled="true"] {
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .library-option small {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .page-heading {
+      display: none;
+    }
+
+    .page-heading.show {
+      display: block;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 9px 22px rgba(24, 28, 36, .06);
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 0 24px 96px;
+      scrollbar-width: none;
+    }
+
+    .content::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section {
+      margin-top: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 14px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .home-title {
+      margin: 4px 0 18px;
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .quick-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 0;
+    }
+
+    .quick-action {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      padding: 16px 13px;
+      min-height: 118px;
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+    }
+
+    .quick-action b {
+      display: block;
+      font-size: 17px;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .quick-action span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .quick-action.featured {
+      background: #1f1f1f;
+      border-color: #1f1f1f;
+      color: #ffffff;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, .18);
+    }
+
+    .quick-action.featured b,
+    .quick-action.featured span {
+      color: #ffffff;
+    }
+
+    .monitor-entry, .monitor-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 28px;
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+    }
+
+    .monitor-entry {
+      width: 100%;
+      margin-top: 12px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .monitor-entry b {
+      display: block;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .monitor-entry span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .monitor-entry svg {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      color: var(--green);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0 10px;
+      scrollbar-width: none;
+    }
+
+    .filter-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      flex: 0 0 auto;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(24, 28, 36, .05);
+    }
+
+    .filter-chip.active {
+      background: #1f1f1f;
+      border-color: #1f1f1f;
+      color: #ffffff;
+    }
+
+    .must-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .must-card {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--panel);
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+      padding: 16px;
+    }
+
+    .must-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .must-card h3 {
+      margin: 0 0 7px;
+      font-size: 17px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .must-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #f3f3f1;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .must-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 12px;
+    }
+
+    .must-meta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #f7f7f5;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .must-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .must-output {
+      display: none;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: var(--card-shadow);
+    }
+
+    .must-output.show {
+      display: block;
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .topic-card, .case-card, .asset-card, .script-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 26px;
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+    }
+
+    .topic-card {
+      min-height: 146px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .topic-card.active, .case-card.active {
+      border-color: #1f1f1f;
+      background: #1f1f1f;
+      color: #ffffff;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, .16);
+    }
+
+    .topic-card.active small,
+    .case-card.active p {
+      color: rgba(255,255,255,.68);
+    }
+
+    .pill {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      height: 23px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #1f1f1f;
+      background: #f0f1f1;
+      white-space: nowrap;
+    }
+
+    .topic-card.active .pill,
+    .case-card.active .pill {
+      background: #ffffff;
+      color: #1f1f1f;
+    }
+
+    .topic-card strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 17px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .topic-card small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .case-list {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .case-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .case-card {
+      min-width: 232px;
+      padding: 18px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .case-card h3 {
+      margin: 8px 0 7px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .case-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .primary-btn {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 24px;
+      background: #1f1f1f;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 16px 30px rgba(0, 0, 0, .18);
+    }
+
+    .secondary-btn {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 650;
+      cursor: pointer;
+      padding: 0 12px;
+    }
+
+    .script-output {
+      display: none;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--panel);
+      box-shadow: var(--card-shadow);
+    }
+
+    .script-output.show {
+      display: block;
+    }
+
+    .script-toolbar {
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .script-toolbar strong {
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 9px;
+      vertical-align: top;
+      line-height: 1.45;
+    }
+
+    th {
+      text-align: left;
+      color: #2f3935;
+      background: #f6f6f4;
+      font-size: 12px;
+    }
+
+    th:first-child, td:first-child {
+      width: 58px;
+      text-align: center;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      width: 37%;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tabbar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 76px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(16px);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 8px 14px 10px;
+      z-index: 10;
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 3px;
+      cursor: pointer;
+      min-width: 0;
+    }
+
+    .tab svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2.2;
+    }
+
+    .tab span {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .tab.active {
+      color: var(--green);
+      font-weight: 750;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .script-card {
+      padding: 18px;
+      margin-bottom: 10px;
+    }
+
+    .script-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .script-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .script-card .row {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .import-panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 26px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+    }
+
+    .import-panel h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .import-panel p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .platform-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .platform-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #f6f6f4;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .result-box {
+      display: none;
+      border: 1px solid var(--line);
+      background: #f8f8f7;
+      border-radius: 22px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-box strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 7px;
+    }
+
+    .result-box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .monitor-form {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 26px;
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow), var(--inner-shadow);
+    }
+
+    .monitor-form .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .monitor-card {
+      padding: 12px;
+      margin-bottom: 8px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .account-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: #1f1f1f;
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(0,0,0,.12);
+    }
+
+    .avatar.light {
+      background: #f3f3f1;
+      color: #1f1f1f;
+      border: 1px solid var(--line);
+    }
+
+    .account-name {
+      min-width: 0;
+    }
+
+    .account-name h3 {
+      margin: 0 0 3px;
+      font-size: 15px;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .account-name p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .metric {
+      background: #f8f8f7;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 8px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .metric b {
+      display: block;
+      margin: 3px 0 6px;
+      font-size: 14px;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .metric small {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .metric .up {
+      color: #1f1f1f;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0 10px;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+
+    .asset-card {
+      padding: 18px;
+      margin-bottom: 10px;
+    }
+
+    .asset-card h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #f8f8f7;
+      color: var(--ink);
+      padding: 10px;
+      outline: none;
+      min-height: 40px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 92px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(29, 35, 33, .92);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 460px) {
+      .stage {
+        padding: 0;
+      }
+
+      .phone {
+        width: 100%;
+        height: 100vh;
+        min-height: 100vh;
+        border-radius: 0;
+        border: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <div class="phone" aria-label="工厂短视频脚本生成器 Demo">
+      <div class="status">
+        <span>9:41</span>
+        <span>5G  88%</span>
+      </div>
+      <div class="app">
+        <header class="topbar">
+          <div class="brand">
+            <button class="library-switch" type="button" id="librarySwitch" aria-expanded="false" aria-controls="libraryMenu">
+              <span id="libraryTitle">工厂脚本库</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </button>
+            <h1 class="page-heading" id="pageTitle">工厂脚本库</h1>
+            <div class="library-menu" id="libraryMenu">
+              <button class="library-option active" type="button" data-library="工厂脚本库">
+                <span>工厂脚本库</span>
+                <small>当前</small>
+              </button>
+              <button class="library-option" type="button" aria-disabled="true" data-library="餐饮脚本库">
+                <span>餐饮脚本库</span>
+                <small>预留</small>
+              </button>
+              <button class="library-option" type="button" aria-disabled="true" data-library="美业脚本库">
+                <span>美业脚本库</span>
+                <small>预留</small>
+              </button>
+              <button class="library-option" type="button" aria-disabled="true" data-library="装修脚本库">
+                <span>装修脚本库</span>
+                <small>预留</small>
+              </button>
+            </div>
+            <p id="pageSub">选题 + 对标案例，一键生成可拍分镜</p>
+          </div>
+          <button class="icon-btn" type="button" aria-label="消息">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+        </header>
+
+        <section class="content view active" id="homeView">
+          <div class="home-title">今天拍什么？</div>
+
+          <div class="quick-row">
+            <button class="quick-action featured" type="button" data-jump="cases">
+              <b>近期爆款</b>
+              <span>看最近可参考的内容结构</span>
+            </button>
+            <button class="quick-action" type="button" data-jump="topics">
+              <b>必拍30条</b>
+              <span>工厂老板优先拍这些题</span>
+            </button>
+            <button class="quick-action" type="button" data-jump="scripts">
+              <b>我的脚本库</b>
+              <span>粘贴对标视频链接提取脚本</span>
+            </button>
+          </div>
+
+          <button class="monitor-entry" type="button" id="monitorEntry">
+            <div>
+              <b>对标账号监控</b>
+              <span>添加抖音/小红书账号，查看作品数、粉丝数、播放量近7天和近30天变化</span>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </button>
+
+          <section class="section" id="topicsSection">
+            <div class="section-head">
+              <h2>今日推荐选题</h2>
+              <span>适合工厂老板</span>
+            </div>
+            <div class="topic-grid" id="topicGrid">
+              <button class="topic-card active" type="button" data-topic="采购避坑">
+                <span class="pill">采购避坑</span>
+                <strong>采购产品最怕踩的 3 个坑</strong>
+                <small>适合讲客户顾虑、质量、交期</small>
+              </button>
+              <button class="topic-card" type="button" data-topic="源头工厂">
+                <span class="pill">源头工厂</span>
+                <strong>为什么客户都想找源头工厂？</strong>
+                <small>适合拍车间、设备、仓库</small>
+              </button>
+              <button class="topic-card" type="button" data-topic="价格揭秘">
+                <span class="pill">价格揭秘</span>
+                <strong>同样产品为什么价格差这么多？</strong>
+                <small>适合解释材料、工艺、服务</small>
+              </button>
+              <button class="topic-card" type="button" data-topic="发货现场">
+                <span class="pill">发货现场</span>
+                <strong>今天这批货为什么客户催着要？</strong>
+                <small>适合拍订单、打包、装车</small>
+              </button>
+            </div>
+          </section>
+
+          <section class="section" id="casesSection">
+            <div class="section-head">
+              <h2>选择对标案例</h2>
+              <span>决定怎么讲</span>
+            </div>
+            <div class="case-list" id="caseList">
+              <button class="case-card active" type="button" data-case="老板讲真话型">
+                <span class="pill">高信任</span>
+                <h3>老板讲真话型</h3>
+                <p>痛点开头 → 说行业实话 → 展示工厂证明 → 引导私信判断需求。</p>
+              </button>
+              <button class="case-card" type="button" data-case="订单现场型">
+                <span class="pill">真实感</span>
+                <h3>订单现场型</h3>
+                <p>从一批真实订单切入，讲客户为什么下单、怎么交付。</p>
+              </button>
+              <button class="case-card" type="button" data-case="价格解释型">
+                <span class="pill">成交逻辑</span>
+                <h3>价格解释型</h3>
+                <p>拆开材料、工艺、交期、售后，把价格差异讲明白。</p>
+              </button>
+            </div>
+          </section>
+
+          <section class="script-output" id="scriptOutput" aria-live="polite">
+            <div class="script-toolbar">
+              <strong id="scriptTitle">采购避坑 · 老板讲真话型</strong>
+              <button class="secondary-btn" type="button" id="copyBtn">复制</button>
+            </div>
+            <table id="scriptTable">
+              <thead>
+                <tr>
+                  <th>分镜序号</th>
+                  <th>画面描述</th>
+                  <th>脚本文案</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+        </section>
+
+        <section class="content view" id="mustView">
+          <button class="back-btn" type="button" id="mustBackHomeBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            返回首页
+          </button>
+          <section class="section">
+            <div class="section-head">
+              <h2>工厂老板必拍30条</h2>
+              <span>手动配置脚本</span>
+            </div>
+            <label>搜索脚本
+              <input id="mustSearchInput" placeholder="搜索产品、场景、脚本类型">
+            </label>
+            <div class="filter-row" id="mustFilterRow">
+              <button class="filter-chip active" type="button" data-filter="全部">全部</button>
+              <button class="filter-chip" type="button" data-filter="避坑">避坑</button>
+              <button class="filter-chip" type="button" data-filter="价格">价格</button>
+              <button class="filter-chip" type="button" data-filter="案例">案例</button>
+              <button class="filter-chip" type="button" data-filter="发货">发货</button>
+              <button class="filter-chip" type="button" data-filter="实力">实力</button>
+            </div>
+            <div class="must-list" id="mustList"></div>
+            <section class="must-output" id="mustOutput" aria-live="polite">
+              <div class="script-toolbar">
+                <strong id="mustOutputTitle">采购产品最怕踩的3个坑</strong>
+                <button class="secondary-btn" type="button" id="mustCopyBtn">复制</button>
+              </div>
+              <table id="mustTable">
+                <thead>
+                  <tr>
+                    <th>分镜序号</th>
+                    <th>画面描述</th>
+                    <th>脚本文案</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </section>
+          </section>
+        </section>
+
+        <section class="content view" id="monitorView">
+          <button class="back-btn" type="button" id="backHomeBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            返回首页
+          </button>
+          <section class="section">
+            <div class="section-head">
+              <h2>对标账号监控</h2>
+              <span>近7天 / 近30天</span>
+            </div>
+            <div class="monitor-form">
+              <label>账号名称或主页链接
+                <input id="accountInput" placeholder="粘贴抖音/小红书账号主页链接，或输入账号名称">
+              </label>
+              <div class="row" style="margin-top: 10px;">
+                <button class="secondary-btn" type="button" id="addAccountBtn">添加账号</button>
+                <button class="secondary-btn" type="button" id="refreshMonitorBtn">刷新数据</button>
+              </div>
+            </div>
+            <div id="accountList">
+              <article class="monitor-card">
+                <div class="account-head">
+                  <div class="avatar">李</div>
+                  <div class="account-name">
+                    <h3>佛山五金老李</h3>
+                    <p>抖音 · 工厂现场 / 报价避坑</p>
+                  </div>
+                </div>
+                <div class="metric-grid">
+                  <div class="metric"><span>作品数</span><b class="up">+6</b><small>7天 +2<br>30天 +6</small></div>
+                  <div class="metric"><span>粉丝数</span><b class="up">+1,934</b><small>7天 +286<br>30天 +1,934</small></div>
+                  <div class="metric"><span>播放量</span><b class="up">+21.6万</b><small>7天 +3.8万<br>30天 +21.6万</small></div>
+                </div>
+              </article>
+              <article class="monitor-card">
+                <div class="account-head">
+                  <div class="avatar light">强</div>
+                  <div class="account-name">
+                    <h3>源头工厂阿强</h3>
+                    <p>小红书 · 客户案例 / 产品细节</p>
+                  </div>
+                </div>
+                <div class="metric-grid">
+                  <div class="metric"><span>作品数</span><b class="up">+4</b><small>7天 +1<br>30天 +4</small></div>
+                  <div class="metric"><span>粉丝数</span><b class="up">+802</b><small>7天 +91<br>30天 +802</small></div>
+                  <div class="metric"><span>播放量</span><b class="up">+8.4万</b><small>7天 +1.2万<br>30天 +8.4万</small></div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="content view" id="scriptsView">
+          <section class="section">
+            <div class="section-head">
+              <h2>我的脚本库</h2>
+              <span>导入对标视频</span>
+            </div>
+            <div class="import-panel">
+              <h3>粘贴抖音 / 小红书视频链接</h3>
+              <p>把客户自己刷到的对标视频放进来，系统生成视频下载入口，并自动提取可参考的脚本文案。</p>
+              <label>视频链接
+                <textarea id="videoLinkInput" placeholder="粘贴抖音或小红书分享链接，例如：https://v.douyin.com/xxxx/"></textarea>
+              </label>
+              <div class="platform-row">
+                <span class="platform-chip" id="platformChip">等待识别平台</span>
+                <span class="platform-chip">支持抖音</span>
+                <span class="platform-chip">支持小红书</span>
+              </div>
+              <button class="primary-btn" type="button" id="analyzeVideoBtn">生成操作按钮</button>
+              <div class="action-row" id="videoActionRow" style="display: none;">
+                <button class="secondary-btn" type="button" id="downloadVideoBtn">下载视频</button>
+                <button class="secondary-btn" type="button" id="extractScriptBtn">提取脚本文案</button>
+              </div>
+              <div class="result-box" id="downloadResult">
+                <strong>视频下载入口已生成</strong>
+                <p>这里后续会显示可下载的视频文件按钮，方便老板保存素材给拍摄或剪辑人员参考。</p>
+              </div>
+              <div class="result-box" id="extractResult">
+                <strong>已提取脚本文案</strong>
+                <p>开头：很多人买这个产品，只看价格就容易踩坑。<br>中段：先讲客户痛点，再展示真实生产过程和细节证明。<br>结尾：引导用户私信需求，获取报价或方案。</p>
+              </div>
+            </div>
+
+            <article class="script-card">
+              <h3>已导入案例</h3>
+              <p>后续这里会保存客户导入过的抖音、小红书对标视频，以及对应提取出来的脚本文案。</p>
+            </article>
+          </section>
+        </section>
+
+        <section class="content view" id="profileView">
+          <section class="section">
+            <div class="section-head">
+              <h2>我的工厂资产</h2>
+              <span>生成脚本时自动调用</span>
+            </div>
+            <div class="asset-card">
+              <h3>工厂资料</h3>
+              <div class="form-grid">
+                <label>工厂名称<input value="华南精密五金源头工厂"></label>
+                <label>所在城市<input value="广东佛山"></label>
+                <label>主营产品<input value="定制五金件、钣金外壳、设备配件"></label>
+              </div>
+            </div>
+            <div class="asset-card">
+              <h3>老板人设</h3>
+              <div class="form-grid">
+                <label>老板称呼<input value="老周"></label>
+                <label>从业年限<input value="做五金加工 12 年"></label>
+                <label>说话风格<input value="朴实、直接、讲实话"></label>
+              </div>
+            </div>
+            <div class="asset-card">
+              <h3>客户与案例</h3>
+              <div class="form-grid">
+                <label>主要客户<input value="设备厂、品牌方、贸易商、工程客户"></label>
+                <label>客户最担心<textarea>质量不稳定、交期拖延、报价不透明、售后没人跟。</textarea></label>
+                <label>真实案例<textarea>上个月帮一家设备厂赶了一批钣金外壳，从打样到交付 9 天完成。</textarea></label>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+
+      <nav class="tabbar" aria-label="底部导航">
+        <button class="tab active" type="button" data-view="homeView" data-title="工厂脚本库" data-sub="选题 + 对标案例，一键生成可拍分镜">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7"></path><path d="M9 22V12h6v10"></path><path d="M21 9v13H3V9"></path></svg>
+          <span>首页</span>
+        </button>
+        <button class="tab" type="button" data-view="scriptsView" data-title="我的脚本库" data-sub="粘贴对标视频链接，下载素材并提取文案">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+          <span>脚本库</span>
+        </button>
+        <button class="tab" type="button" data-view="profileView" data-title="我的" data-sub="维护工厂资产，让脚本更像老板本人">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>我的</span>
+        </button>
+      </nav>
+      <div class="toast" id="toast">已复制脚本</div>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      topic: "采购避坑",
+      caseName: "老板讲真话型"
+    };
+
+    const scripts = {
+      "采购避坑": [
+        ["1", "老板站在车间门口，镜头带到厂牌和车间入口。", "很多客户找五金加工厂，最怕的不是价格高，而是找错工厂。"],
+        ["2", "切到材料、设备、工人操作，拍真实生产细节。", "同样一个配件，材料、精度、工艺差一点，后面装机就可能出问题。"],
+        ["3", "拍质检台、卡尺测量、产品细节特写。", "所以采购前一定要问清楚：用什么材料、精度怎么控、质检怎么做。"],
+        ["4", "展示打样件、订单单据局部、打包发货画面。", "我们做五金加工 12 年，从打样、生产到发货，关键节点都会跟客户确认。"],
+        ["5", "老板回到镜头前，自然做结尾引导。", "如果你也在找定制五金件工厂，可以把图纸或需求发我，我先帮你判断怎么做更稳。"]
+      ],
+      "源头工厂": [
+        ["1", "镜头从车间外推进到生产设备，老板入镜。", "客户为什么愿意直接找源头工厂？因为很多问题，现场才能说清楚。"],
+        ["2", "拍设备运行、工人加工、半成品堆放。", "我们做定制五金件，打样、加工、质检、包装都在自己厂里完成。"],
+        ["3", "展示样品架和不同规格产品。", "你要改尺寸、换材料、调工艺，不用一层层传话，沟通效率会高很多。"],
+        ["4", "拍老板和师傅看图纸、确认细节。", "尤其是定制件，前期细节确认得越清楚，后面返工风险越小。"],
+        ["5", "老板站在发货区做收尾。", "你有图纸或样品，可以发我看一下，我帮你先评估工艺和大概交期。"]
+      ],
+      "价格揭秘": [
+        ["1", "老板拿着两个相似产品对比，镜头给特写。", "两个看起来差不多的五金件，为什么报价能差一截？"],
+        ["2", "切到材料厚度、表面处理、加工边缘细节。", "差别通常不只在利润，而是在材料、精度、表面处理和检验标准。"],
+        ["3", "拍设备加工和质检过程。", "有些产品便宜，是因为省了中间工序；但用到设备上，问题可能后面才出现。"],
+        ["4", "展示包装、标签、出货清单。", "我们报价会把材料、工艺、数量、交期说清楚，让客户知道钱花在哪里。"],
+        ["5", "老板对镜头做私信引导。", "如果你手上有产品图，可以发我，我帮你拆一下这个件的合理成本。"]
+      ],
+      "发货现场": [
+        ["1", "拍打包区和等待装车的货，环境真实忙碌。", "今天这批货，客户催得很急，因为他们那边设备等着装配。"],
+        ["2", "切到工人贴标签、清点数量、封箱。", "定制五金件最怕交期拖，所以每一箱出货前都要核数量、核规格。"],
+        ["3", "拍老板检查产品、看发货单。", "这批从打样确认到生产交付，我们用了 9 天，关键是前期细节一次确认清楚。"],
+        ["4", "拍装车或快递揽收。", "客户急的时候，工厂能不能配合，靠的不是口号，是生产排期和现场执行。"],
+        ["5", "老板站在货车旁结尾。", "你也有急单或定制件需求，可以先把数量和图纸发我，我帮你看能不能赶。"]
+      ]
+    };
+
+    const mustScripts = [
+      {
+        id: "avoid-pit",
+        title: "采购产品最怕踩的3个坑",
+        category: "避坑",
+        scene: "老板出镜 / 车间实拍",
+        duration: "30秒",
+        difficulty: "简单",
+        status: "未拍",
+        summary: "适合用质量、交期、售后三个点建立采购信任。",
+        rows: [
+          ["1", "老板站在车间入口，背景能看到设备和工人。", "很多客户找工厂，最怕的不是价格高，而是踩这三个坑。"],
+          ["2", "拍材料、半成品和质检细节。", "第一个坑，只问价格，不问材料和工艺，后面质量很容易不稳定。"],
+          ["3", "拍排产看板、打包区或发货区。", "第二个坑，只听承诺交期，不看工厂有没有真实生产排期。"],
+          ["4", "老板拿着样品或图纸说明。", "第三个坑，下单前细节没确认清楚，后面返工成本会很高。"],
+          ["5", "老板对镜头收尾。", "你有采购需求，可以先把图纸或样品发我，我帮你判断这单怎么做更稳。"]
+        ]
+      },
+      {
+        id: "price-gap",
+        title: "同样产品为什么价格差这么多？",
+        category: "价格",
+        scene: "产品对比 / 老板口播",
+        duration: "30秒",
+        difficulty: "简单",
+        status: "推荐",
+        summary: "用材料、精度、工序解释报价差异，适合成交前教育客户。",
+        rows: [
+          ["1", "老板拿两个相似产品对比，镜头给特写。", "两个看起来差不多的产品，为什么报价会差这么多？"],
+          ["2", "拍材料厚度、表面处理、加工边缘。", "差别往往藏在材料、精度、表面处理和检验标准里。"],
+          ["3", "拍设备加工和质检动作。", "有些便宜，是少了工序；但用到客户项目上，问题可能后面才出现。"],
+          ["4", "展示包装、标签、发货清单。", "我们报价会把材料、工艺、数量、交期说清楚，让客户知道钱花在哪里。"],
+          ["5", "老板面对镜头。", "你手上有产品图，可以发我，我帮你拆一下合理成本。"]
+        ]
+      },
+      {
+        id: "case-proof",
+        title: "客户从犹豫到复购的过程",
+        category: "案例",
+        scene: "订单案例 / 发货现场",
+        duration: "45秒",
+        difficulty: "中等",
+        status: "未拍",
+        summary: "用真实成交过程降低陌生客户的不信任。",
+        rows: [
+          ["1", "拍一批已打包订单，订单信息注意打码。", "这个客户第一次找我们的时候，其实也很犹豫。"],
+          ["2", "拍样品、图纸沟通、生产过程。", "他最担心的是交期和质量，所以我们先把样品、工艺和时间节点确认清楚。"],
+          ["3", "拍质检、包装、装车。", "第一批货交付后，客户反馈稳定，后面又追加了复购订单。"],
+          ["4", "老板出镜总结。", "工厂合作不是只看第一次报价，关键是每一次交付都能不能稳定。"],
+          ["5", "老板自然引导。", "如果你也在找长期合作的工厂，可以先发需求，我帮你看适不适合做。"]
+        ]
+      },
+      {
+        id: "delivery-day",
+        title: "今天这批货为什么客户催着要？",
+        category: "发货",
+        scene: "打包区 / 装车现场",
+        duration: "30秒",
+        difficulty: "简单",
+        status: "未拍",
+        summary: "适合在真实发货当天拍，增强工厂真实感。",
+        rows: [
+          ["1", "拍等待装车的货和打包现场。", "今天这批货，客户催得很急，因为他们那边项目等着用。"],
+          ["2", "拍清点数量、贴标签、封箱。", "定制产品最怕交期拖，所以出货前数量、规格、包装都要核清楚。"],
+          ["3", "拍老板检查发货单。", "这批从确认到交付，我们按约定时间完成，靠的是前期细节确认和现场排产。"],
+          ["4", "拍装车或物流揽收。", "客户急的时候，工厂能不能配合，靠的不是口号，是现场执行。"],
+          ["5", "老板站在货旁收尾。", "你有急单需求，可以把数量和图纸发我，我帮你看能不能赶。"]
+        ]
+      },
+      {
+        id: "factory-strength",
+        title: "带你看一批订单怎么生产出来",
+        category: "实力",
+        scene: "车间动线 / 生产过程",
+        duration: "60秒",
+        difficulty: "中等",
+        status: "未拍",
+        summary: "从生产流程展示工厂能力，适合建立源头工厂信任。",
+        rows: [
+          ["1", "镜头从车间入口推进到设备区。", "很多客户说想找源头工厂，那今天带你看一批订单是怎么做出来的。"],
+          ["2", "拍图纸确认、材料准备。", "第一步不是马上生产，而是先确认图纸、材料、数量和交期。"],
+          ["3", "拍设备加工、师傅操作。", "生产过程中，关键尺寸和工艺节点都要盯住。"],
+          ["4", "拍质检、包装、成品区。", "最后还要做质检、包装和发货确认，减少客户后面的沟通成本。"],
+          ["5", "老板在车间收尾。", "如果你想找能长期配合的工厂，可以先发需求，我们先把细节聊清楚。"]
+        ]
+      },
+      {
+        id: "owner-truth",
+        title: "做了12年工厂，我想说句实话",
+        category: "避坑",
+        scene: "老板口播 / 工厂背景",
+        duration: "30秒",
+        difficulty: "简单",
+        status: "推荐",
+        summary: "老板人设型脚本，适合建立真实、直接、懂行的感觉。",
+        rows: [
+          ["1", "老板站在工厂门口，直接面对镜头。", "做了12年工厂，我想跟第一次找工厂的客户说句实话。"],
+          ["2", "切到车间和产品细节。", "不要只看谁报价低，更要看这个工厂能不能把细节说清楚、把交付做稳定。"],
+          ["3", "拍老板和师傅看图纸。", "很多问题不是生产当天才出现，而是前期沟通没有确认好。"],
+          ["4", "拍发货或质检画面。", "靠谱的合作，是价格、质量、交期、售后都能提前讲明白。"],
+          ["5", "老板自然引导。", "你有产品要做，可以先发我看看，我会直接告诉你适不适合做。"]
+        ]
+      }
+    ];
+
+    const topicCards = document.querySelectorAll(".topic-card");
+    const caseCards = document.querySelectorAll(".case-card");
+    const scriptOutput = document.getElementById("scriptOutput");
+    const scriptTitle = document.getElementById("scriptTitle");
+    const scriptBody = document.querySelector("#scriptTable tbody");
+    const copyBtn = document.getElementById("copyBtn");
+    const quickActions = document.querySelectorAll(".quick-action");
+    const videoLinkInput = document.getElementById("videoLinkInput");
+    const platformChip = document.getElementById("platformChip");
+    const analyzeVideoBtn = document.getElementById("analyzeVideoBtn");
+    const videoActionRow = document.getElementById("videoActionRow");
+    const downloadVideoBtn = document.getElementById("downloadVideoBtn");
+    const extractScriptBtn = document.getElementById("extractScriptBtn");
+    const downloadResult = document.getElementById("downloadResult");
+    const extractResult = document.getElementById("extractResult");
+    const monitorEntry = document.getElementById("monitorEntry");
+    const backHomeBtn = document.getElementById("backHomeBtn");
+    const mustBackHomeBtn = document.getElementById("mustBackHomeBtn");
+    const mustList = document.getElementById("mustList");
+    const mustFilterRow = document.getElementById("mustFilterRow");
+    const mustSearchInput = document.getElementById("mustSearchInput");
+    const mustOutput = document.getElementById("mustOutput");
+    const mustOutputTitle = document.getElementById("mustOutputTitle");
+    const mustBody = document.querySelector("#mustTable tbody");
+    const mustCopyBtn = document.getElementById("mustCopyBtn");
+    const accountInput = document.getElementById("accountInput");
+    const addAccountBtn = document.getElementById("addAccountBtn");
+    const refreshMonitorBtn = document.getElementById("refreshMonitorBtn");
+    const accountList = document.getElementById("accountList");
+    const tabs = document.querySelectorAll(".tab");
+    const views = document.querySelectorAll(".view");
+    const pageTitle = document.getElementById("pageTitle");
+    const libraryTitle = document.getElementById("libraryTitle");
+    const librarySwitch = document.getElementById("librarySwitch");
+    const libraryMenu = document.getElementById("libraryMenu");
+    const libraryOptions = document.querySelectorAll(".library-option");
+    const pageSub = document.getElementById("pageSub");
+    const toast = document.getElementById("toast");
+
+    function setActive(items, activeItem) {
+      items.forEach(item => item.classList.toggle("active", item === activeItem));
+    }
+
+    function renderScript() {
+      const rows = scripts[state.topic] || scripts["采购避坑"];
+      scriptTitle.textContent = `${state.topic} · ${state.caseName}`;
+      scriptBody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+        </tr>
+      `).join("");
+      scriptOutput.classList.add("show");
+      scriptOutput.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function setLibraryMenu(open) {
+      libraryMenu.classList.toggle("show", open);
+      librarySwitch.classList.toggle("open", open);
+      librarySwitch.setAttribute("aria-expanded", String(open));
+    }
+
+    function setTopbarMode(viewName, title, sub) {
+      const isHome = viewName === "homeView";
+      librarySwitch.style.display = isHome ? "inline-flex" : "none";
+      pageTitle.classList.toggle("show", !isHome);
+      pageTitle.textContent = isHome ? libraryTitle.textContent : title;
+      pageSub.textContent = sub;
+      setLibraryMenu(false);
+    }
+
+    function activateTab(viewName) {
+      const tab = Array.from(tabs).find(item => item.dataset.view === viewName);
+      if (!tab) return;
+      tabs.forEach(item => item.classList.remove("active"));
+      views.forEach(view => view.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(viewName).classList.add("active");
+      setTopbarMode(viewName, tab.dataset.title, tab.dataset.sub);
+    }
+
+    function openMonitorView() {
+      tabs.forEach(item => item.classList.remove("active"));
+      views.forEach(view => view.classList.remove("active"));
+      document.getElementById("monitorView").classList.add("active");
+      setTopbarMode("monitorView", "对标账号监控", "追踪作品数、粉丝数、播放量变化");
+    }
+
+    function openMustView() {
+      tabs.forEach(item => item.classList.remove("active"));
+      views.forEach(view => view.classList.remove("active"));
+      document.getElementById("mustView").classList.add("active");
+      setTopbarMode("mustView", "必拍30条", "后台手动配置的工厂脚本库");
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function getActiveMustFilter() {
+      return mustFilterRow.querySelector(".filter-chip.active")?.dataset.filter || "全部";
+    }
+
+    function renderMustList() {
+      const filter = getActiveMustFilter();
+      const keyword = mustSearchInput.value.trim();
+      const filtered = mustScripts.filter(item => {
+        const matchFilter = filter === "全部" || item.category === filter;
+        const haystack = `${item.title} ${item.category} ${item.scene} ${item.summary}`;
+        const matchKeyword = !keyword || haystack.includes(keyword);
+        return matchFilter && matchKeyword;
+      });
+
+      mustList.innerHTML = filtered.map(item => `
+        <article class="must-card" data-id="${item.id}">
+          <div class="must-card-head">
+            <div>
+              <h3>${item.title}</h3>
+              <p>${item.summary}</p>
+            </div>
+            <span class="status-pill">${item.status}</span>
+          </div>
+          <div class="must-meta">
+            <span>${item.category}</span>
+            <span>${item.scene}</span>
+            <span>${item.duration}</span>
+            <span>${item.difficulty}</span>
+          </div>
+          <div class="must-actions">
+            <button class="secondary-btn must-view-btn" type="button" data-id="${item.id}">查看脚本</button>
+            <button class="secondary-btn must-use-btn" type="button" data-id="${item.id}">生成我的版本</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function showMustScript(id) {
+      const item = mustScripts.find(script => script.id === id);
+      if (!item) return;
+      mustOutputTitle.textContent = item.title;
+      mustBody.innerHTML = item.rows.map(row => `
+        <tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+        </tr>
+      `).join("");
+      mustOutput.classList.add("show");
+      mustOutput.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    topicCards.forEach(card => {
+      card.addEventListener("click", () => {
+        state.topic = card.dataset.topic;
+        setActive(topicCards, card);
+      });
+    });
+
+    caseCards.forEach(card => {
+      card.addEventListener("click", () => {
+        state.caseName = card.dataset.case;
+        setActive(caseCards, card);
+      });
+    });
+
+    videoLinkInput.addEventListener("input", () => {
+      const value = videoLinkInput.value.trim();
+      if (/douyin|iesdouyin|抖音/i.test(value)) {
+        platformChip.textContent = "已识别：抖音";
+        return;
+      }
+      if (/xiaohongshu|xhslink|小红书/i.test(value)) {
+        platformChip.textContent = "已识别：小红书";
+        return;
+      }
+      platformChip.textContent = value ? "链接已填写，待识别平台" : "等待识别平台";
+    });
+
+    analyzeVideoBtn.addEventListener("click", () => {
+      if (!videoLinkInput.value.trim()) {
+        showToast("先粘贴视频链接");
+        return;
+      }
+      videoActionRow.style.display = "grid";
+      downloadResult.classList.remove("show");
+      extractResult.classList.remove("show");
+      showToast("操作按钮已生成");
+    });
+
+    downloadVideoBtn.addEventListener("click", () => {
+      downloadResult.classList.add("show");
+      showToast("已生成下载入口");
+    });
+
+    extractScriptBtn.addEventListener("click", () => {
+      extractResult.classList.add("show");
+      showToast("已提取脚本文案");
+    });
+
+    monitorEntry.addEventListener("click", openMonitorView);
+
+    backHomeBtn.addEventListener("click", () => {
+      activateTab("homeView");
+    });
+
+    mustBackHomeBtn.addEventListener("click", () => {
+      activateTab("homeView");
+    });
+
+    addAccountBtn.addEventListener("click", () => {
+      const name = accountInput.value.trim();
+      if (!name) {
+        showToast("先输入账号名称或链接");
+        return;
+      }
+      const cleanName = escapeHtml(name.length > 16 ? "新添加对标账号" : name);
+      const card = document.createElement("article");
+      card.className = "monitor-card";
+      card.innerHTML = `
+        <div class="account-head">
+          <div class="avatar">新</div>
+          <div class="account-name">
+            <h3>${cleanName}</h3>
+            <p>待同步平台 · 等待抓取近期数据</p>
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>作品数</span><b class="up">待更新</b><small>7天 --<br>30天 --</small></div>
+          <div class="metric"><span>粉丝数</span><b class="up">待更新</b><small>7天 --<br>30天 --</small></div>
+          <div class="metric"><span>播放量</span><b class="up">待更新</b><small>7天 --<br>30天 --</small></div>
+        </div>
+      `;
+      accountList.prepend(card);
+      accountInput.value = "";
+      showToast("已添加对标账号");
+    });
+
+    refreshMonitorBtn.addEventListener("click", () => {
+      showToast("数据已刷新");
+    });
+
+    mustSearchInput.addEventListener("input", renderMustList);
+
+    mustFilterRow.addEventListener("click", event => {
+      const chip = event.target.closest(".filter-chip");
+      if (!chip) return;
+      mustFilterRow.querySelectorAll(".filter-chip").forEach(item => item.classList.remove("active"));
+      chip.classList.add("active");
+      renderMustList();
+    });
+
+    mustList.addEventListener("click", event => {
+      const viewBtn = event.target.closest(".must-view-btn");
+      const useBtn = event.target.closest(".must-use-btn");
+      if (viewBtn) {
+        showMustScript(viewBtn.dataset.id);
+        return;
+      }
+      if (useBtn) {
+        showMustScript(useBtn.dataset.id);
+        showToast("已套用我的工厂资产");
+      }
+    });
+
+    mustCopyBtn.addEventListener("click", async () => {
+      const title = mustOutputTitle.textContent;
+      const item = mustScripts.find(script => script.title === title);
+      if (!item) return;
+      const rows = [["分镜序号", "画面描述", "脚本文案"], ...item.rows];
+      const text = rows.map(row => row.join("\t")).join("\n");
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制三列表格");
+      } catch {
+        showToast("可手动选中表格复制");
+      }
+    });
+
+    quickActions.forEach(action => {
+      action.addEventListener("click", () => {
+        if (action.dataset.jump === "topics") {
+          openMustView();
+          return;
+        }
+        if (action.dataset.jump === "cases") {
+          document.getElementById("casesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (action.dataset.jump === "scripts") {
+          activateTab("scriptsView");
+          return;
+        }
+        activateTab("profileView");
+      });
+    });
+
+    renderMustList();
+
+    librarySwitch.addEventListener("click", () => {
+      setLibraryMenu(!libraryMenu.classList.contains("show"));
+    });
+
+    libraryOptions.forEach(option => {
+      option.addEventListener("click", () => {
+        if (option.getAttribute("aria-disabled") === "true") {
+          showToast(`${option.dataset.library}已预留`);
+          setLibraryMenu(false);
+          return;
+        }
+        libraryOptions.forEach(item => item.classList.remove("active"));
+        option.classList.add("active");
+        libraryTitle.textContent = option.dataset.library;
+        pageTitle.textContent = option.dataset.library;
+        setLibraryMenu(false);
+      });
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".brand")) {
+        setLibraryMenu(false);
+      }
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      const rows = [["分镜序号", "画面描述", "脚本文案"], ...(scripts[state.topic] || [])];
+      const text = rows.map(row => row.join("\t")).join("\n");
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制三列表格");
+      } catch {
+        showToast("可手动选中表格复制");
+      }
+    });
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        activateTab(tab.dataset.view);
+      });
+    });
+  </script>
+</body>
+</html>

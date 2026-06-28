@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>室内 AI 方案工作台</title>
+    <link rel="stylesheet" href="/styles.css?v=20260628-ref-fix" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">室</span>
+          <div>
+            <strong>室内 AI</strong>
+            <small>方案工作台</small>
+          </div>
+        </div>
+
+        <nav class="step-list" aria-label="工作流">
+          <button class="step active" data-mode="layout">
+            <span>01</span>
+            <strong>家具布置</strong>
+          </button>
+          <button class="step" data-mode="colored">
+            <span>02</span>
+            <strong>彩平生成</strong>
+          </button>
+          <button class="step" data-mode="axon">
+            <span>03</span>
+            <strong>3D 轴侧</strong>
+          </button>
+          <button class="step" data-mode="room">
+            <span>04</span>
+            <strong>房间效果</strong>
+          </button>
+          <button class="step" data-mode="enhance">
+            <span>05</span>
+            <strong>质感增强</strong>
+          </button>
+        </nav>
+
+        <div class="sidebar-meta">
+          <div>
+            <span>当前版本</span>
+            <strong id="resultCount">0</strong>
+          </div>
+          <div>
+            <span>服务端口</span>
+            <strong>8004</strong>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <label for="projectName">项目名称</label>
+            <input id="projectName" value="小户型室内方案" />
+          </div>
+          <div class="top-actions">
+            <button id="saveProject" class="ghost-button" type="button">保存项目</button>
+            <button id="exportProject" class="primary-button" type="button">导出方案包</button>
+          </div>
+        </header>
+
+        <section class="board">
+          <form class="input-panel" id="configForm">
+            <div class="panel-heading">
+              <h1>输入</h1>
+              <span id="saveState">未保存</span>
+            </div>
+
+            <label class="upload-zone" for="floorUpload">
+              <input id="floorUpload" type="file" accept="image/*" />
+              <span>上传平面图或房间图</span>
+              <strong id="uploadName">未选择文件</strong>
+            </label>
+
+            <label>
+              房间功能说明
+              <textarea id="roomBrief" rows="8">三口之家，客厅需要沙发、电视和餐桌；主卧需要双人床、衣柜和书桌；厨房保持开放式动线；保持墙体、门窗和承重结构不变。</textarea>
+            </label>
+
+            <div class="field-grid">
+              <label>
+                房间类型
+                <select id="roomType">
+                  <option>客厅</option>
+                  <option>卧室</option>
+                  <option>餐厅</option>
+                  <option>书房</option>
+                  <option>厨房</option>
+                  <option>庭院</option>
+                </select>
+              </label>
+              <label>
+                设计风格
+                <select id="stylePreset">
+                  <option>现代简约</option>
+                  <option>现代奶油风</option>
+                  <option>新中式</option>
+                  <option>法式</option>
+                  <option>侘寂风</option>
+                  <option>原木风</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                材质偏好
+                <select id="materialPreset">
+                  <option>木地板 + 白墙 + 布艺</option>
+                  <option>微水泥 + 石材 + 金属</option>
+                  <option>原木 + 藤编 + 亚麻</option>
+                  <option>大理石 + 皮革 + 黄铜</option>
+                </select>
+              </label>
+              <label>
+                光影
+                <select id="lightingPreset">
+                  <option>通用明亮</option>
+                  <option>自然光影</option>
+                  <option>夜景暖光</option>
+                  <option>柔和漫射光</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              高级描述
+              <textarea id="advancedPrompt" rows="5">空间整洁、家具尺度合理、避免遮挡门窗、不要改变墙体结构、不要生成多余隔断。</textarea>
+            </label>
+          </form>
+
+          <section class="stage-panel">
+            <div class="panel-heading">
+              <div>
+                <h1 id="modeTitle">家具布置</h1>
+                <p id="modeSummary">保持结构不变，生成带家具的平面布置。</p>
+              </div>
+              <button id="generateButton" class="primary-button" type="button">生成</button>
+            </div>
+
+            <div class="canvas-wrap">
+              <canvas id="resultCanvas" width="900" height="1200"></canvas>
+              <div id="emptyState" class="empty-state">
+                <strong>等待输入</strong>
+                <span>上传图片后生成方案结果</span>
+              </div>
+            </div>
+
+            <div class="prompt-preview">
+              <span>生成参数</span>
+              <p id="promptPreview"></p>
+            </div>
+
+            <div class="api-status" id="apiStatus">
+              <strong>AI 状态</strong>
+              <span>正在检查本地生图服务</span>
+            </div>
+          </section>
+
+          <aside class="result-panel">
+            <div class="panel-heading">
+              <h1>结果</h1>
+              <button id="downloadCurrent" class="ghost-button" type="button">下载当前图</button>
+            </div>
+
+            <div class="result-stack" id="resultStack"></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js?v=20260628-ref-fix"></script>
+  </body>
+</html>
