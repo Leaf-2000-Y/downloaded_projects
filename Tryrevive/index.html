@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tryrevive - 夺回你的注意力主权</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 1. LINK INTERCEPT MODAL (跳转前置拦截) -->
+  <div id="link-intercept-modal" class="dialog-overlay">
+    <div class="dialog-content">
+      <div class="dialog-title" style="color: var(--accent); display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>注意力防线：建立行动计划</span>
+      </div>
+      <div class="dialog-body">
+        <p>你即将前往 <strong id="intercept-site-name" style="color: var(--text-primary);">社交App</strong> 寻找建议。在陷入算法流之前，请为自己设防：</p>
+        
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="input-label" for="intercept-duration">预计浏览时间 (分钟)</label>
+          <select id="intercept-duration" class="text-input" style="width: 100%; appearance: none; background-image: radial-gradient(circle, rgba(255,255,255,0.05), transparent); border-radius: 14px;">
+            <option value="1">1 分钟 (测试快速模式)</option>
+            <option value="5">5 分钟 - 快速找灵感</option>
+            <option value="10" selected>10 分钟 - 标本参考</option>
+            <option value="15">15 分钟 - 上限限制</option>
+            <option value="20">20 分钟 - 深度研究</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="intercept-step2">今日计划的第二步是？</label>
+          <input type="text" id="intercept-step2" class="text-input" placeholder="例如：整理素材，提取排版草图" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="intercept-step3">今日计划的第三步是？</label>
+          <input type="text" id="intercept-step3" class="text-input" placeholder="例如：开始动手设计第一页 Canvas" autocomplete="off">
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 0.8rem; width: 100%;">
+        <button onclick="cancelRedirect()" class="btn-sec" style="flex: 1;">留下来开始第一步</button>
+        <button onclick="confirmRedirect()" class="btn-primary" style="flex: 1; padding: 0.8rem 1.5rem; font-size: 0.9rem;">带着计划前往</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. TAB BLUR / OVERTIME ALERT OVERLAY -->
+  <div id="alert-blocking" class="alert-blocking-overlay">
+    <div class="alert-blocking-card">
+      <div class="blocking-warning-title">⚠️ 推荐流超时预警</div>
+      <div id="blocking-warning-text" class="blocking-warning-body">
+        检测到你刚才切出了专注视区。
+      </div>
+      <div id="blocking-mbti-quote" style="font-family: var(--font-serif); font-size: 1.15rem; color: var(--accent-light); margin-bottom: 2rem; line-height: 1.5; font-style: italic;">
+        "你的梦想在等待你..."
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+        <button onclick="extendFocusTimer(300)" class="btn-sec" style="width: 100%; border-color: rgba(239, 68, 68, 0.35);">确认再延时 5 分钟</button>
+        <button onclick="enterMeditationFromBlocker()" class="btn-primary" style="width: 100%;">立即进入禅修冷静</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ADD CUSTOM APP MODAL -->
+  <div id="add-app-modal" class="dialog-overlay">
+    <div class="dialog-content">
+      <div class="dialog-title" style="color: var(--accent); display: flex; align-items: center; gap: 0.4rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        添加自定义设防应用
+      </div>
+      <div class="dialog-body">
+        <label class="input-label" style="font-size: 0.7rem; margin-bottom: 0.5rem; display: block;">快速选择预设推荐：</label>
+        <div class="preset-apps-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.2rem;">
+          <button onclick="fillPresetApp('拼多多', 'https://www.pinduoduo.com')" class="preset-app-badge">拼多多</button>
+          <button onclick="fillPresetApp('淘宝', 'https://www.taobao.com')" class="preset-app-badge">淘宝</button>
+          <button onclick="fillPresetApp('抖音', 'https://www.douyin.com')" class="preset-app-badge">抖音</button>
+          <button onclick="fillPresetApp('微博', 'https://weibo.com')" class="preset-app-badge">微博</button>
+          <button onclick="fillPresetApp('公众号', 'https://mp.weixin.qq.com')" class="preset-app-badge">公众号</button>
+          <button onclick="fillPresetApp('知乎', 'https://www.zhihu.com')" class="preset-app-badge">知乎</button>
+          <button onclick="fillPresetApp('小红书', 'https://www.xiaohongshu.com')" class="preset-app-badge">小红书</button>
+          <button onclick="fillPresetApp('B站', 'https://www.bilibili.com')" class="preset-app-badge">B站</button>
+        </div>
+        <div class="form-group">
+          <label class="input-label" for="custom-app-name">应用名称</label>
+          <input type="text" id="custom-app-name" class="text-input" placeholder="例如：知乎 / 微博" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="input-label" for="custom-app-url">应用网址 URL</label>
+          <input type="text" id="custom-app-url" class="text-input" placeholder="例如：https://www.zhihu.com" autocomplete="off">
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.8rem; width: 100%;">
+        <button onclick="document.getElementById('add-app-modal').classList.remove('active')" class="btn-sec" style="flex: 1;">取消</button>
+        <button onclick="saveCustomApp()" class="btn-primary" style="flex: 1;">添加至 Dock</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="app-viewport">
+    
+    <!-- 1. NARRATIVE ENTRANCE SCREEN -->
+    <section id="view-narrative" class="view-screen narrative-paper active">
+      <canvas id="narrative-sprout-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;"></canvas>
+      <button onclick="skipNarrative()" class="skip-narrative-btn">跳过叙事 ➜</button>
+      
+      <div class="narrative-content">
+        <p class="narrative-line" id="narrative-1">hey，遥远的朋友。</p>
+        <p class="narrative-line" id="narrative-2">见字如面。</p>
+        <p class="narrative-line" id="narrative-3">身处这个时代的我们，注意力被切割得七零八落。</p>
+        <p class="narrative-line" id="narrative-4">脑海里那些属于自己的小念头，常常在 feed 流的海浪里，风雨飘摇。</p>
+        <p class="narrative-line" id="narrative-5">所以我们有了 Tryrevive。</p>
+        <p class="narrative-line" id="narrative-6">去索求，而非被填喂；去发问，而非被裹挟。</p>
+        <p class="narrative-line" id="narrative-7">用「自己」去搜索「生活的谜底」。</p>
+      </div>
+
+      <footer id="narrative-footer" style="width: 100%; opacity: 0; transition: opacity 0.8s ease;">
+        <button onclick="skipNarrative()" class="btn-primary" style="width: 100%;">开启我的注意力存档</button>
+      </footer>
+    </section>
+
+    <!-- 2. LOGIN / ARCHIVE REGISTRATION SCREEN -->
+    <section id="view-login" class="view-screen">
+      <header>
+        <h1 class="title-lg">注意力存档</h1>
+        <p class="desc-md">每次注册都是一个新的自律轮回与存档。</p>
+      </header>
+
+      <div class="glass-card" style="margin-top: 1.5rem;">
+        <div class="form-group">
+          <label class="input-label" for="login-username">存档账号</label>
+          <input type="text" id="login-username" class="text-input" placeholder="输入存档名（如: Rowan）" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="login-password">存档密码</label>
+          <input type="password" id="login-password" class="text-input" placeholder="设定存档钥匙" autocomplete="off">
+        </div>
+      </div>
+
+      <footer>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+          <button onclick="handleRegister()" class="btn-primary">建立新存档 (进入评测)</button>
+          <button onclick="handleLogin()" class="btn-sec" style="text-align: center;">载入旧存档</button>
+        </div>
+      </footer>
+    </section>
+
+    <!-- 3. MINIMALIST ADAPTIVE QUIZ SCREEN -->
+    <section id="view-quiz" class="view-screen">
+      <header>
+        <div class="quiz-progress-bar">
+          <div id="quiz-progress" class="quiz-progress-fill"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 id="quiz-title-label" class="title-lg" style="font-size: 1.6rem; margin-bottom: 0;">自适应心理洞察</h2>
+          <button onclick="skipQuiz()" class="btn-sec" style="padding: 0.3rem 0.8rem; font-size: 0.75rem;">直接跳过</button>
+        </div>
+        <p class="desc-md" style="font-size: 0.85rem; margin-top: 0.4rem;">极简的心理特征评测，可随时结束分析。</p>
+      </header>
+
+      <div class="glass-card" style="margin-top: 1.5rem; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 380px;">
+        <h3 id="quiz-question-text" style="font-family: var(--font-serif); font-size: 1.15rem; font-weight: 500; line-height: 1.5; margin-bottom: 1.5rem;">
+          正在加载测评问题...
+        </h3>
+        
+        <div id="quiz-options-box" style="width: 100%;">
+          <!-- Quiz options buttons injected here -->
+        </div>
+      </div>
+
+      <footer style="text-align: center; color: var(--text-muted); font-size: 0.75rem;">
+        基于已完成的问题我们将分析你的专注倾向
+      </footer>
+    </section>
+
+    <!-- 4. ONBOARDING (COLOR WREATH & MOTIVATION) -->
+    <section id="view-onboarding" class="view-screen">
+      <header>
+        <h1 class="title-lg">治愈主题色</h1>
+        <p class="desc-md">选择能让你心安的植物花叶色环。</p>
+      </header>
+
+      <div style="display: flex; flex-direction: column; align-items: center; position: relative;">
+        <!-- Leaf Color Wreath Container -->
+        <div class="wreath-container">
+          <svg id="color-wreath" class="wreath-svg" viewBox="-120 -120 240 240">
+            <defs>
+              <!-- Gradients will be dynamically injected here for 12 leaves -->
+            </defs>
+            <!-- Mandala Center Dot -->
+            <circle cx="0" cy="0" r="22" fill="rgba(255, 255, 255, 0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle cx="0" cy="0" r="10" id="wreath-center-node" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <p class="desc-md" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">
+          点击外围叶片，即可激活对应的宁静疗愈色调
+        </p>
+
+        <!-- Dynamic Desktop Pet Selection and Control -->
+        <div class="form-group" style="margin-bottom: 0; width: 100%; max-width: 500px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; width: 100%;">
+            <label class="input-label" style="margin-bottom: 0; display: flex; align-items: center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              桌面自律专注伴侣 (本地桌宠)
+            </label>
+            <span id="pet-server-status" class="status-badge status-offline">○ 本地服务未启动</span>
+          </div>
+          <div class="pet-control-panel" style="font-size: 0.76rem; background: rgba(0, 0, 0, 0.15); padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.02); display: flex; flex-direction: column; gap: 0.6rem; width: 100%;">
+            <div id="pet-server-tip" style="color: var(--text-muted); line-height: 1.4;">
+              检测到本地服务未启动，无法控制桌宠。请在终端执行：<br>
+              <code style="color: var(--accent-light); font-family: monospace; display: block; margin-top: 0.3rem; font-size: 0.78rem; word-break: break-all; background: rgba(0,0,0,0.2); padding: 0.3rem 0.6rem; border-radius: 6px;">python3 Tryrevive/pet_server.py</code>
+            </div>
+            <div id="pet-controls-container" style="display: none; align-items: center; gap: 0.8rem; width: 100%;">
+              <div style="flex: 1;">
+                <select id="pet-select" class="text-input" style="width: 100%; border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.75rem; background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.06); height: auto;">
+                  <option value="desktop_pet.py">Crayon Pet (默认 PyQt6 蜡笔桌宠)</option>
+                </select>
+              </div>
+              <button id="pet-toggle-btn" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.75rem; border-radius: 8px; margin: 0; min-width: 80px;" onclick="toggleDesktopPet()">开启桌宠</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="margin-top: 1rem; margin-bottom: 1rem; padding: 1.25rem;">
+        <!-- Custom Heart quote -->
+        <div class="form-group">
+          <label class="input-label" for="input-custom-quote">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            自定义冥想心语 (在禅修空间飘浮展现)
+          </label>
+          <input type="text" id="input-custom-quote" class="text-input" placeholder="输入能让你放松的词句（留空将自动生成人格警醒语）" autocomplete="off">
+        </div>
+        <!-- Motivation -->
+        <div class="form-group">
+          <label class="input-label" for="input-motivation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            终极人生目标 (如: 攒钱去冰岛看极光)
+          </label>
+          <input type="text" id="input-motivation" class="text-input" placeholder="如：逃离垃圾推荐流，去创造属于自己的价值" autocomplete="off">
+        </div>
+        <!-- Anthropic API Key -->
+        <div class="form-group">
+          <label class="input-label" for="input-api-key">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+            Anthropic API Key (开启 AI 禅修心语反馈)
+          </label>
+          <input type="password" id="input-api-key" class="text-input" placeholder="输入 console.anthropic.com 密钥 (选填，仅本地保存)" autocomplete="off">
+        </div>
+      </div>
+
+      <footer>
+        <button onclick="completeOnboarding()" class="btn-primary" style="width: 100%;">踏入专注世界</button>
+      </footer>
+    </section>
+
+    <!-- 5. MAIN DASHBOARD SCREEN (HOME - Google Style Centered Layout) -->
+    <section id="view-home" class="view-screen">
+      <!-- Minimalist Clean Top Header -->
+      <header style="padding: 0 0.5rem; display: flex; justify-content: flex-end; align-items: center; width: 100%;">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="switchView('onboarding')" class="btn-sec" style="padding: 0.35rem 0.7rem; font-size: 0.72rem; border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 3px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>设置偏好</button>
+          <button onclick="handleLogout()" class="btn-sec" style="padding: 0.35rem 0.7rem; font-size: 0.72rem; border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);">登出</button>
+        </div>
+      </header>
+
+      <!-- Centered Layout Container (Google-Style Page) -->
+      <div class="google-home-container" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 1.5rem 0;">
+        
+        <!-- Welcome Serif Header -->
+        <div style="text-align: center; margin-bottom: 1.8rem;">
+          <h2 id="dashboard-welcome-title" style="font-family: var(--font-serif); font-size: 2.2rem; font-weight: 500; color: var(--text-primary); margin-bottom: 0.3rem;">你好，朋友！</h2>
+          <p id="dashboard-mbti-label" style="font-size: 0.85rem; color: var(--accent-light); font-weight: 500; letter-spacing: 0.05em;">"即搜即达，心无旁骛"</p>
+        </div>
+
+        <!-- Google Style Rounded Search Input Box -->
+        <div class="google-search-wrapper" style="width: 100%; max-width: 500px; margin-bottom: 2rem;">
+          <div class="search-wrapper" style="margin-top: 0;">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="home-search-input" class="search-input" placeholder="输入搜索主题/关键词，或直接输入网址..." autocomplete="off">
+          </div>
+        </div>
+
+
+
+        <!-- Custom App Dock Grid Container -->
+        <div class="dock-panel" style="width: 100%; max-width: 500px; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding: 0 0.5rem;">
+            <span class="input-label" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              设防 App Dock 栏
+            </span>
+            <button onclick="toggleDockEditMode()" id="edit-dock-btn" style="font-size: 0.7rem; color: var(--accent); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.2rem;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px; margin-right: 2px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span>编辑管理</span>
+            </button>
+          </div>
+          
+          <!-- Custom App Icons Dock -->
+          <div id="app-dock-grid" class="app-dock-grid">
+            <!-- Dynamic Apps list will render here. Appends "+" icon at end. -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Today's Goal Coach Card (Evolved to AI Coach Console) -->
+      <div id="goal-coach-popup" class="goal-popup-card" style="margin-bottom: 1rem; width: 100%; max-width: 500px; align-self: center; background: rgba(18, 20, 27, 0.65); border: 1px solid rgba(255,255,255,0.03); backdrop-filter: blur(25px);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="input-label" style="font-size: 0.75rem; color: var(--accent); font-weight: 600; display: flex; align-items: center; gap: 0.3rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M12 22C12 22 20 18 20 12C20 9 17 9 17 9C17 9 17 6 14 6C11.5 6 12 10 12 12C12 10 12.5 6 10 6C7 6 7 9 7 9C7 9 4 9 4 12C4 18 12 22 12 22Z"></path><path d="M12 2V22"></path></svg>
+            AI 自律教练破局对话板 (AI Coach Console)
+          </span>
+          <button onclick="document.getElementById('goal-coach-popup').style.display='none'" style="color: var(--text-muted); cursor: pointer; font-size: 0.8rem; background: none; border: none;">✕</button>
+        </div>
+        
+        <!-- AI Coach Chat panel content -->
+        <div class="ai-coach-panel" id="coach-panel-content" style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+          <div class="chat-history" id="chat-history-box" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 120px; overflow-y: auto; padding-right: 0.3rem;">
+            <div class="chat-bubble bubble-coach" style="font-size: 0.75rem; line-height: 1.4; padding: 0.5rem 0.8rem; border-radius: 10px; max-width: 90%; background: rgba(255, 138, 101, 0.05); border: 1px solid rgba(255, 138, 101, 0.1); align-self: flex-start; color: #ffd0c0; border-bottom-left-radius: 2px;">
+              你好，Rowan。我是你的 AI 自律陪伴教练。你今天立下的终极目标是「重新掌控注意力主权」。为了降低大脑的阻力，我们现在将它解构为 3 个极微小的一步。
+            </div>
+            <div class="chat-bubble bubble-coach" style="font-size: 0.75rem; line-height: 1.4; padding: 0.5rem 0.8rem; border-radius: 10px; max-width: 90%; background: rgba(255, 138, 101, 0.05); border: 1px solid rgba(255, 138, 101, 0.1); align-self: flex-start; color: #ffd0c0; border-bottom-left-radius: 2px;">
+              请在下方输入你今日想完成的第一步微小想法，或者选择预设场景让我帮您拆解：
+            </div>
+          </div>
+
+          <div class="steps-suggestions" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <span class="suggest-pill" onclick="sendCoachSuggestion('我被短视频推荐流卡住了')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 0.3rem 0.6rem; font-size: 0.68rem; color: var(--text-muted); cursor: pointer; transition: all 0.3s;">被短视频卡住</span>
+            <span class="suggest-pill" onclick="sendCoachSuggestion('我觉得目标太大不知道怎么动笔')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 0.3rem 0.6rem; font-size: 0.68rem; color: var(--text-muted); cursor: pointer; transition: all 0.3s;">目标太大无法下笔</span>
+            <span class="suggest-pill" onclick="sendCoachSuggestion('我感到焦虑，有点想刷小红书')" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 0.3rem 0.6rem; font-size: 0.68rem; color: var(--text-muted); cursor: pointer; transition: all 0.3s;">感到焦虑浮躁</span>
+          </div>
+
+          <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" id="goal-first-step-input" class="chat-input" placeholder="输入第一步微小目标，或在此提问..." autocomplete="off" onkeypress="handleCoachKeyPress(event)" style="flex: 1; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.04); border-radius: 10px; padding: 0.5rem 0.8rem; font-size: 0.75rem; color: #FFFFFF; transition: border-color 0.3s;">
+            <button class="send-btn" onclick="sendCoachMessage()" style="background: var(--accent); color: #0A0B0E; font-size: 0.72rem; font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 10px; cursor: pointer; transition: background 0.3s, transform 0.1s; border: none; outline: none;">咨询</button>
+          </div>
+        </div>
+
+        <div id="goal-plan-steps-display" style="display: none; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 0.6rem; margin-top: 0.2rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; width: 100%;">
+          <div><strong style="color: var(--accent);">第二步计划：</strong><span id="display-step-2">-</span></div>
+          <div style="margin-top: 0.2rem;"><strong style="color: var(--accent);">第三步计划：</strong><span id="display-step-3">-</span></div>
+        </div>
+      </div>
+
+
+      <div id="warning-reborn-banner" class="reborn-banner" style="position: relative; max-width: 480px; align-self: center; margin-bottom: 0.5rem; left: 0; width: 100%;">
+        <div class="reborn-banner-title" id="reborn-banner-title-text">You are someone who can really control yourself, do not let internet steal your life.</div>
+        <div class="reborn-banner-sub">reborn from now</div>
+      </div>
+
+      <!-- Bottom Meditation Entrance -->
+      <div class="meditation-trigger-box" style="padding-top: 0.5rem;">
+        <div class="circle-pulse-trigger" onclick="switchView('meditation')" aria-label="进入 Galaxy 禅定空间">
+          <svg class="meditation-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12A10 10 0 0 1 12 2z"></path>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MEDITATION / GALAXY SCREEN -->
+    <section id="view-meditation" class="view-screen" style="padding: 0;">
+      
+      <!-- 6a. MEDITATION SETUP OVERLAY (时间及气场设定) -->
+      <div id="meditation-setup-overlay" style="position: absolute; inset: 0; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem;">
+        <div class="glass-card" style="width: 100%; max-width: 400px; text-align: center;">
+          <h3 class="title-lg" style="font-size: 1.4rem; color: var(--accent); margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            开启宇宙禅想
+          </h3>
+          <p id="meditation-goal-review" class="desc-md" style="font-size: 0.88rem; margin-bottom: 1.5rem; color: var(--text-primary); font-weight: 500;">
+            正在回顾今日目标...
+          </p>
+          
+          <!-- Custom meditation phrase settings during setup -->
+          <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
+            <label class="input-label" for="meditation-setup-quote" style="font-size: 0.7rem; display: flex; align-items: center; gap: 0.3rem;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -1px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              本次专注心语 (可随时修改)
+            </label>
+            <input type="text" id="meditation-setup-quote" class="text-input" placeholder="输入能让你放松的话，将与自适应警句混合浮现..." style="padding: 0.5rem 0.8rem; font-size: 0.8rem; border-radius: 10px;">
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+            <button onclick="startMeditationSession(60)" class="btn-primary" style="font-size: 0.95rem; padding: 0.9rem;">1 分钟快速调整</button>
+            <button onclick="startMeditationSession(300)" class="btn-primary" style="font-size: 0.95rem; padding: 0.9rem; background: linear-gradient(135deg, var(--accent-light), var(--accent));">5 分钟深度心流</button>
+            <button onclick="exitMeditationCleanly()" class="btn-sec" style="font-size: 0.85rem; padding: 0.6rem;">返回首页</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="galaxy-container">
+        
+        <canvas id="galaxy-canvas" class="galaxy-canvas"></canvas>
+        
+        <!-- Canvas for rendering watercolor cloud bubbles in background -->
+        <canvas id="cloud-bubble-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;"></canvas>
+        
+        <!-- Redesigned Zen Thought Loop Typography Container -->
+        <div class="zen-thought-container" style="z-index: 3;">
+          <div id="zen-thought-text" class="zen-thought-text"></div>
+        </div>
+
+        <!-- Breathing Sanctuary (Clean meditation ring, no pet avatar) -->
+        <div class="breathing-sanctuary" style="z-index: 4;">
+          <div class="breath-circle-outer" style="width: 200px; height: 200px;">
+            <div id="breath-circle-inner" class="breath-circle-inner" style="width: 140px; height: 140px; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, var(--accent-glow), transparent);">
+            </div>
+          </div>
+          <div id="breathing-label" class="breathing-text" style="margin-top: 1rem;">吸气…</div>
+        </div>
+
+        <div class="galaxy-ui" style="z-index: 5;">
+          <div class="galaxy-header">
+            <button onclick="exitMeditationCleanly()" class="btn-sec" style="background: rgba(0,0,0,0.35); border-color: rgba(255,255,255,0.08); pointer-events: auto;">退出禅修</button>
+            <div id="meditation-timer" class="meditation-timer">05:00</div>
+          </div>
+          
+          <div style="text-align: center; padding-bottom: 1.5rem; pointer-events: auto;">
+            <button onclick="askUserStatusDuringHealing()" class="btn-sec" style="font-size: 0.75rem; padding: 0.35rem 0.8rem; background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.05);">记录当下的状态</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Wakeup Modal Dialog Popup -->
+      <div id="wakeup-dialog" class="dialog-overlay" style="z-index: 2000;">
+        <div class="dialog-content">
+          <div class="dialog-title" style="color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px;"><path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M6.34 17.66l-1.41 1.41M12 20v2M17.66 17.66l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41"></path><circle cx="12" cy="12" r="4"></circle></svg>
+            禅修圆满完成
+          </div>
+          <div class="dialog-body">
+            <p>你已经成功坚持了禅想呼吸与自省，注意力主权已收复。</p>
+            <p style="margin-top: 1rem; color: var(--text-primary); font-weight: 500;">今日警示梦想词：</p>
+            <p id="wakeup-motivation-text" style="font-style: italic; color: var(--accent-light); margin-top: 0.5rem; font-size: 1rem;"></p>
+          </div>
+          <button onclick="closeWakeupModal(); setAvatarState('white');" class="btn-primary" style="margin-top: 0.5rem;">我已醒悟，立即重启</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
